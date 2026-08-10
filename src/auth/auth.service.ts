@@ -8,6 +8,8 @@ import { RegisterDto } from './dto/register.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
+import { Role } from '../roles/entities/role.entity';
+import { Role as RoleEnum } from '../common/enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +19,8 @@ export class AuthService {
     private configService: ConfigService,
     @InjectRepository(RefreshToken)
     private refreshTokenRepo: Repository<RefreshToken>,
+    @InjectRepository(Role)
+    private roleRepo: Repository<Role>,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -56,12 +60,15 @@ export class AuthService {
     const saltRounds = parseInt(this.configService.get('BCRYPT_SALT_ROUNDS') || '12', 10);
     const passwordHash = await bcrypt.hash(registerDto.password, saltRounds);
 
+    let patientRole = await this.roleRepo.findOne({ where: { name: RoleEnum.PATIENT } });
+
     const user = await this.usersService.create({
       email: registerDto.email,
       firstName: registerDto.firstName,
       lastName: registerDto.lastName,
       mobile: registerDto.mobile,
       passwordHash,
+      roles: patientRole ? [patientRole] : [],
     });
 
     const { passwordHash: _, ...result } = user;

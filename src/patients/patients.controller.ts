@@ -12,13 +12,12 @@ import { AuditLogInterceptor } from '../common/interceptors/audit-log.intercepto
 @ApiTags('patients')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-// @UseInterceptors(AuditLogInterceptor) // Commented until global audit log is wired
 @Controller('patients')
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT)
   @ApiOperation({ summary: 'Create a new patient profile' })
   create(@Body() createPatientDto: CreatePatientDto) {
     return this.patientsService.create(createPatientDto);

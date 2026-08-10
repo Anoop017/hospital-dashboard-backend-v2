@@ -6,4 +6,6 @@ export enum Role {
   STAFF = 'staff',
   PATIENT = 'patient',
   RECEPTIONIST = 'receptionist',
+  PHARMACIST = 'pharmacist',
+  LAB_TECHNICIAN = 'lab_technician',
 }

@@ -2,12 +2,21 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { Role } from '../roles/entities/role.entity';
+import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
+import { In } from 'typeorm';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
+    private configService: ConfigService,
   ) { }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -52,5 +61,89 @@ export class UsersService {
 
     const user = this.usersRepository.create(userData);
     return this.usersRepository.save(user);
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.usersRepository.find({
+      relations: { roles: true },
+      //select: ['id', 'email', 'firstName', 'lastName', 'mobile', 'isActive', 'isLocked', 'createdAt']
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        mobile: true,
+        isActive: true,
+        isLocked: true,
+        createdAt: true,
+        
+      }
+    });
+  }
+
+  async createAdminUser(createUserDto: CreateUserDto): Promise<User> {
+    const { password, roles, ...userData } = createUserDto;
+
+    const existingEmail = await this.findByEmail(userData.email);
+    if (existingEmail) throw new ConflictException('Email already exists');
+    
+    const existingMobile = await this.findByNumber(userData.mobile);
+    if (existingMobile) throw new ConflictException('Mobile number already exists');
+
+    const saltRounds = parseInt(this.configService.get('BCRYPT_SALT_ROUNDS') || '12', 10);
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    let assignedRoles: Role[] = [];
+    if (roles && roles.length > 0) {
+      assignedRoles = await this.roleRepository.find({
+        where: { name: In(roles) }
+      });
+    }
+
+    const user = this.usersRepository.create({
+      ...userData,
+      passwordHash,
+      roles: assignedRoles,
+    });
+
+    const savedUser = await this.usersRepository.save(user);
+    const { passwordHash: _, ...result } = savedUser;
+    return result as User;
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.findById(id);
+    const { roles, ...updateData } = updateUserDto;
+
+    if (updateData.email && updateData.email !== user.email) {
+      const existingEmail = await this.findByEmail(updateData.email);
+      if (existingEmail) throw new ConflictException('Email already exists');
+    }
+
+    if (updateData.mobile && updateData.mobile !== user.mobile) {
+      const existingMobile = await this.findByNumber(updateData.mobile);
+      if (existingMobile) throw new ConflictException('Mobile number already exists');
+    }
+
+    Object.assign(user, updateData);
+
+    if (roles !== undefined) {
+      if (roles.length > 0) {
+        user.roles = await this.roleRepository.find({
+          where: { name: In(roles) }
+        });
+      } else {
+        user.roles = [];
+      }
+    }
+
+    const savedUser = await this.usersRepository.save(user);
+    const { passwordHash: _, ...result } = savedUser;
+    return result as User;
+  }
+
+  async remove(id: string): Promise<void> {
+    const user = await this.findById(id);
+    await this.usersRepository.softRemove(user);
   }
 }
