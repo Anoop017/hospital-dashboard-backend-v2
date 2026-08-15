@@ -26,9 +26,11 @@ import { InsuranceModule } from './insurance/insurance.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { HealthModule } from './health/health.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, AuthModule, UsersModule, RolesModule, PermissionsModule, PatientsModule, DoctorsModule, StaffModule, DepartmentsModule, AppointmentsModule, WardsModule, BedsModule, AdmissionsModule, MedicalRecordsModule, PrescriptionsModule, MedicinesModule, PharmacyModule, LaboratoryModule, BillingModule, PaymentsModule, InsuranceModule, NotificationsModule, AuditLogsModule, DashboardModule],
+  imports: [ConfigModule, DatabaseModule, AuthModule, UsersModule, RolesModule, PermissionsModule, PatientsModule, DoctorsModule, StaffModule, DepartmentsModule, AppointmentsModule, WardsModule, BedsModule, AdmissionsModule, MedicalRecordsModule, PrescriptionsModule, MedicinesModule, PharmacyModule, LaboratoryModule, BillingModule, PaymentsModule, InsuranceModule, NotificationsModule, AuditLogsModule, DashboardModule, HealthModule, UploadsModule],
   controllers: [AppController],
   providers: [AppService],
 })
