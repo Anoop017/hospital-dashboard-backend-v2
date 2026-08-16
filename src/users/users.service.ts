@@ -63,10 +63,9 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find({
+  async findAll(role?: string): Promise<User[]> {
+    const queryOptions: any = {
       relations: { roles: true },
-      //select: ['id', 'email', 'firstName', 'lastName', 'mobile', 'isActive', 'isLocked', 'createdAt']
       select: {
         id: true,
         email: true,
@@ -76,9 +75,39 @@ export class UsersService {
         isActive: true,
         isLocked: true,
         createdAt: true,
-        
+      }
+    };
+
+    if (role) {
+      // If they explicitly ask for staff, include nurses as well. Otherwise support comma-separated roles.
+      const rolesToSearch = role === 'staff' ? ['staff', 'nurse'] : role.split(',');
+      queryOptions.where = {
+        roles: {
+          name: In(rolesToSearch)
+        }
+      };
+    }
+
+    return this.usersRepository.find(queryOptions);
+  }
+
+  async findAllSummary(): Promise<{ total: number; active: number; locked: number; admins: number }> {
+    const users = await this.usersRepository.find({
+      relations: { roles: true },
+      select: {
+        id: true,
+        isActive: true,
+        isLocked: true,
+        roles: { name: true }
       }
     });
+
+    return {
+      total: users.length,
+      active: users.filter(u => u.isActive).length,
+      locked: users.filter(u => u.isLocked).length,
+      admins: users.filter(u => u.roles?.some(r => r.name === 'admin' || r.name === 'super_admin')).length
+    };
   }
 
   async createAdminUser(createUserDto: CreateUserDto): Promise<User> {

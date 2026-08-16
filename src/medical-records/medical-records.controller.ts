@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { MedicalRecordsService } from './medical-records.service';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
 import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
@@ -29,6 +29,13 @@ export class MedicalRecordsController {
     return this.medicalRecordsService.findAll();
   }
 
+  @Get('me')
+  @Roles(Role.PATIENT, Role.DOCTOR)
+  @ApiOperation({ summary: 'Get my medical records' })
+  findMe(@Request() req: any) {
+    return this.medicalRecordsService.findMy(req.user.sub);
+  }
+
   @Get('patient/:patientId')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT)
   @ApiOperation({ summary: 'Get all medical records for a specific patient' })
@@ -44,7 +51,7 @@ export class MedicalRecordsController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
   @ApiOperation({ summary: 'Update a medical record' })
   update(@Param('id') id: string, @Body() updateMedicalRecordDto: UpdateMedicalRecordDto) {
     return this.medicalRecordsService.update(id, updateMedicalRecordDto);

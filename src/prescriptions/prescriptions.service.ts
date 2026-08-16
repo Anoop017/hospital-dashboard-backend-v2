@@ -41,6 +41,22 @@ export class PrescriptionsService {
     });
   }
 
+  async findMy(userId: string): Promise<Prescription[]> {
+    return this.prescriptionsRepository.find({
+      where: [
+        { patient: { userId } },
+        { doctor: { userId } }
+      ],
+      relations: {
+        patient: { user: true },
+        doctor: { user: true },
+        items: {
+          medicine: true,
+        }
+      }
+    });
+  }
+
   async findOne(id: string): Promise<Prescription> {
     const prescription = await this.prescriptionsRepository.findOne({ 
       where: { id },

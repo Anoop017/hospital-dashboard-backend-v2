@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { PrescriptionsService } from './prescriptions.service';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
@@ -23,12 +23,21 @@ export class PrescriptionsController {
   }
 
   @Get()
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get all prescriptions' })
   findAll() {
     return this.prescriptionsService.findAll();
   }
 
+  @Get('me')
+  @Roles(Role.PATIENT, Role.DOCTOR)
+  @ApiOperation({ summary: 'Get my prescriptions' })
+  findMe(@Request() req: any) {
+    return this.prescriptionsService.findMy(req.user.sub);
+  }
+
   @Get(':id')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get prescription by id' })
   findOne(@Param('id') id: string) {
     return this.prescriptionsService.findOne(id);

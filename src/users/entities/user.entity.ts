@@ -25,6 +25,9 @@ export class User extends BaseEntity {
   @Column({ default: false })
   isLocked: boolean;
 
+  @Column({ default: false })
+  isSystem: boolean;
+
   @Column({ type: 'timestamp', nullable: true })
   lastLoginAt: Date;
 

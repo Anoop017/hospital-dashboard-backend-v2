@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, Request } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
+import { CreatePatientWithUserDto } from './dto/create-patient-with-user.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -23,11 +24,25 @@ export class PatientsController {
     return this.patientsService.create(createPatientDto);
   }
 
+  @Post('with-user')
+  @Roles(Role.ADMIN, Role.RECEPTIONIST)
+  @ApiOperation({ summary: 'Create a new patient profile along with a new user account' })
+  createWithUser(@Body() createPatientWithUserDto: CreatePatientWithUserDto) {
+    return this.patientsService.createWithUser(createPatientWithUserDto);
+  }
+
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   @ApiOperation({ summary: 'Get all patients' })
   findAll() {
     return this.patientsService.findAll();
+  }
+
+  @Get('me')
+  @Roles(Role.PATIENT)
+  @ApiOperation({ summary: 'Get current patient profile' })
+  findMe(@Request() req: any) {
+    return this.patientsService.findOneByUserId(req.user.sub);
   }
 
   @Get(':id')

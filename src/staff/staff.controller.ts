@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { CreateStaffDto } from './dto/create-staff.dto';
+import { CreateStaffWithUserDto } from './dto/create-staff-with-user.dto';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -16,10 +17,17 @@ export class StaffController {
   constructor(private readonly staffService: StaffService) {}
 
   @Post()
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Create a new staff profile' })
   create(@Body() createStaffDto: CreateStaffDto) {
     return this.staffService.create(createStaffDto);
+  }
+
+  @Post('with-user')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Create a new staff profile along with a new user account' })
+  createWithUser(@Body() createStaffWithUserDto: CreateStaffWithUserDto) {
+    return this.staffService.createWithUser(createStaffWithUserDto);
   }
 
   @Get()
@@ -27,6 +35,13 @@ export class StaffController {
   @ApiOperation({ summary: 'Get all staff members' })
   findAll() {
     return this.staffService.findAll();
+  }
+
+  @Get('me')
+  @Roles(Role.STAFF, Role.NURSE, Role.RECEPTIONIST, Role.LAB_TECHNICIAN, Role.PHARMACIST)
+  @ApiOperation({ summary: 'Get current staff profile' })
+  findMe(@Request() req: any) {
+    return this.staffService.findOneByUserId(req.user.sub);
   }
 
   @Get(':id')

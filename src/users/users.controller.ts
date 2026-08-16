@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -23,9 +23,15 @@ export class UsersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all users' })
-  findAll() {
-    return this.usersService.findAll();
+  @ApiOperation({ summary: 'Get all users, optionally filtered by role' })
+  findAll(@Query('role') role?: string) {
+    return this.usersService.findAll(role);
+  }
+
+  @Get('summary')
+  @ApiOperation({ summary: 'Get a summarized list of all users' })
+  findAllSummary() {
+    return this.usersService.findAllSummary();
   }
 
   @Get(':id')

@@ -26,6 +26,19 @@ export class AppointmentsService {
     });
   }
 
+  async findMy(userId: string): Promise<Appointment[]> {
+    return this.appointmentsRepository.find({
+      where: [
+        { patient: { userId } },
+        { doctor: { userId } }
+      ],
+      relations: {
+        patient: { user: true },
+        doctor: { user: true },
+      },
+    });
+  }
+
   async findOne(id: string): Promise<Appointment> {
     const appointment = await this.appointmentsRepository.findOne({
       where: { id },

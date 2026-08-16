@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { LaboratoryService } from './laboratory.service';
 import { CreateLabTestDto } from './dto/create-lab-test.dto';
 import { UpdateLabTestDto } from './dto/update-lab-test.dto';
@@ -23,12 +23,21 @@ export class LaboratoryController {
   }
 
   @Get()
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.LAB_TECHNICIAN, Role.NURSE)
   @ApiOperation({ summary: 'Get all lab tests' })
   findAll() {
     return this.laboratoryService.findAll();
   }
 
+  @Get('me')
+  @Roles(Role.PATIENT, Role.DOCTOR)
+  @ApiOperation({ summary: 'Get my lab tests' })
+  findMe(@Request() req: any) {
+    return this.laboratoryService.findMy(req.user.sub);
+  }
+
   @Get(':id')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.LAB_TECHNICIAN, Role.NURSE, Role.PATIENT)
   @ApiOperation({ summary: 'Get lab test by id' })
   findOne(@Param('id') id: string) {
     return this.laboratoryService.findOne(id);

@@ -5,12 +5,24 @@ import { Doctor } from './entities/doctor.entity';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 
+import { UsersService } from '../users/users.service';
+import { CreateDoctorWithUserDto } from './dto/create-doctor-with-user.dto';
+import { Role as RoleEnum } from '../common/enums/role.enum';
+
 @Injectable()
 export class DoctorsService {
   constructor(
     @InjectRepository(Doctor)
     private doctorsRepository: Repository<Doctor>,
+    private usersService: UsersService,
   ) {}
+
+  async createWithUser(dto: CreateDoctorWithUserDto): Promise<Doctor> {
+    dto.user.roles = [RoleEnum.DOCTOR];
+    const user = await this.usersService.createAdminUser(dto.user);
+    const doctorData = { ...dto.doctor, userId: user.id };
+    return this.create(doctorData);
+  }
 
   async create(createDoctorDto: CreateDoctorDto): Promise<Doctor> {
     const existingUser = await this.doctorsRepository.findOne({
@@ -32,6 +44,17 @@ export class DoctorsService {
 
   async findAll(): Promise<Doctor[]> {
     return this.doctorsRepository.find({ relations: { user: true } });
+  }
+
+  async findOneByUserId(userId: string): Promise<Doctor> {
+    const doctor = await this.doctorsRepository.findOne({
+      where: { userId },
+      relations: { user: true },
+    });
+    if (!doctor) {
+      throw new NotFoundException(`Doctor with user ID ${userId} not found`);
+    }
+    return doctor;
   }
 
   async findOne(id: string): Promise<Doctor> {

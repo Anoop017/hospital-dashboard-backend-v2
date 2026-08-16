@@ -27,6 +27,20 @@ export class MedicalRecordsService {
     });
   }
 
+  async findMy(userId: string): Promise<MedicalRecord[]> {
+    return this.medicalRecordsRepository.find({
+      where: [
+        { patient: { userId } },
+        { doctor: { userId } }
+      ],
+      relations: {
+        patient: { user: true },
+        doctor: { user: true },
+        appointment: true,
+      },
+    });
+  }
+
   async findOne(id: string): Promise<MedicalRecord> {
     const record = await this.medicalRecordsRepository.findOne({
       where: { id },

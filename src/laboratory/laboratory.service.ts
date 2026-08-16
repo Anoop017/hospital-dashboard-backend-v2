@@ -23,6 +23,16 @@ export class LaboratoryService {
     });
   }
 
+  async findMy(userId: string): Promise<LabTest[]> {
+    return this.labTestsRepository.find({
+      where: [
+        { patient: { userId } },
+        { doctor: { userId } }
+      ],
+      relations: { patient: { user: true }, doctor: { user: true } }
+    });
+  }
+
   async findOne(id: string): Promise<LabTest> {
     const labTest = await this.labTestsRepository.findOne({ 
       where: { id },

@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { XssInterceptor } from './common/interceptors/xss.interceptor';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -27,8 +28,9 @@ async function bootstrap() {
   const apiPrefix = configService.get<string>('app.apiPrefix') || 'api/v1';
   app.setGlobalPrefix(apiPrefix);
 
-  // Global Filters
+  // Global Filters & Interceptors
   app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(new XssInterceptor());
 
   // Validation
   app.useGlobalPipes(

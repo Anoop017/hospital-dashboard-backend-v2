@@ -27,6 +27,20 @@ export class AdmissionsService {
     });
   }
 
+  async findMy(userId: string): Promise<Admission[]> {
+    return this.admissionsRepository.find({
+      where: [
+        { patient: { userId } },
+        { admittingDoctor: { userId } }
+      ],
+      relations: {
+        patient: { user: true },
+        admittingDoctor: { user: true },
+        bed: { ward: true },
+      },
+    });
+  }
+
   async findOne(id: string): Promise<Admission> {
     const admission = await this.admissionsRepository.findOne({
       where: { id },

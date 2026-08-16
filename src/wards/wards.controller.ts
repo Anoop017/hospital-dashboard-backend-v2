@@ -23,14 +23,14 @@ export class WardsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF, Role.PATIENT)
   @ApiOperation({ summary: 'Get all wards' })
   findAll() {
     return this.wardsService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF, Role.PATIENT)
   @ApiOperation({ summary: 'Get a ward by ID' })
   findOne(@Param('id') id: string) {
     return this.wardsService.findOne(id);

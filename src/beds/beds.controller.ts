@@ -23,22 +23,22 @@ export class BedsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF, Role.PATIENT)
   @ApiOperation({ summary: 'Get all beds' })
   findAll() {
     return this.bedsService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF, Role.PATIENT)
   @ApiOperation({ summary: 'Get a bed by ID' })
   findOne(@Param('id') id: string) {
     return this.bedsService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.NURSE)
-  @ApiOperation({ summary: 'Update a bed (e.g., status)' })
+  @Roles(Role.ADMIN, Role.NURSE, Role.DOCTOR)
+  @ApiOperation({ summary: 'Update a bed (e.g., status, assign patient)' })
   update(@Param('id') id: string, @Body() updateBedDto: UpdateBedDto) {
     return this.bedsService.update(id, updateBedDto);
   }

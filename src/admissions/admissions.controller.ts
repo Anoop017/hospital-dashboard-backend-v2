@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
 import { AdmissionsService } from './admissions.service';
 import { CreateAdmissionDto } from './dto/create-admission.dto';
 import { UpdateAdmissionDto } from './dto/update-admission.dto';
@@ -27,6 +27,13 @@ export class AdmissionsController {
   @ApiOperation({ summary: 'Get all admissions' })
   findAll() {
     return this.admissionsService.findAll();
+  }
+
+  @Get('me')
+  @Roles(Role.PATIENT, Role.DOCTOR)
+  @ApiOperation({ summary: 'Get my admissions' })
+  findMe(@Request() req: any) {
+    return this.admissionsService.findMy(req.user.sub);
   }
 
   @Get(':id')
