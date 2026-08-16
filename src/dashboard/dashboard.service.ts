@@ -167,8 +167,8 @@ export class DashboardService {
         patientOverviewChart: {
           labels: ["10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm"],
           datasets: {
-            onTime: [40, 55, 45, 58, 45, 65, 40],
-            onLate: [60, 45, 35, 42, 50, 45, 30]
+            onTime: Array.from({length: 7}, () => Math.floor(Math.random() * 50) + 20),
+            onLate: Array.from({length: 7}, () => Math.floor(Math.random() * 50) + 20)
           }
         },
         calendarEvents

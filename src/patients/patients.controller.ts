@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, Request, Query } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { CreatePatientWithUserDto } from './dto/create-patient-with-user.dto';
@@ -31,6 +31,13 @@ export class PatientsController {
     return this.patientsService.createWithUser(createPatientWithUserDto);
   }
 
+  @Get('overview')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @ApiOperation({ summary: 'Get formatted patient overview list' })
+  getOverview(@Query('filter') filter?: string) {
+    return this.patientsService.getOverview(filter);
+  }
+
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
   @ApiOperation({ summary: 'Get all patients' })
@@ -57,6 +64,13 @@ export class PatientsController {
   @ApiOperation({ summary: 'Update a patient profile' })
   update(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
     return this.patientsService.update(id, updatePatientDto);
+  }
+
+  @Delete('bulk')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Bulk soft delete patients' })
+  bulkRemove(@Body('ids') ids: string[]) {
+    return this.patientsService.bulkRemove(ids);
   }
 
   @Delete(':id')
