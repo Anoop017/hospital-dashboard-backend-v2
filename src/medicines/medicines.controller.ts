@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards } from '@nestjs/common';
 import { MedicinesService } from './medicines.service';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
@@ -35,7 +35,7 @@ export class MedicinesController {
   }
 
   @Roles(Role.ADMIN)
-  @Patch(':id')
+  @Put(':id')
   @ApiOperation({ summary: 'Update a medicine (Admin only)' })
   update(@Param('id') id: string, @Body() updateMedicineDto: UpdateMedicineDto) {
     return this.medicinesService.update(id, updateMedicineDto);

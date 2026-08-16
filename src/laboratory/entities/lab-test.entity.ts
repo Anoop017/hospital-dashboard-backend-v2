@@ -16,14 +16,20 @@ export class LabTest {
   @Column()
   testName: string;
 
-  @Column({ default: 'pending' }) // pending, in_progress, completed, cancelled
+  @Column()
+  testType: string;
+
+  @Column({ default: 'pending' }) // pending, completed, cancelled
   status: string;
 
   @Column({ type: 'text', nullable: true })
-  resultDetails: string;
+  result: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
-  cost: number;
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  testDate: Date;
+
+  @Column({ type: 'text', nullable: true })
+  reportUrl: string;
 
   @ManyToOne(() => Patient)
   @JoinColumn({ name: 'patientId' })

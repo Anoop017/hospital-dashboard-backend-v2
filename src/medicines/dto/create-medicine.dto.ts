@@ -12,10 +12,15 @@ export class CreateMedicineDto {
   @IsNotEmpty()
   manufacturer: string;
 
+  @ApiProperty({ example: 'Antibiotics' })
+  @IsString()
+  @IsNotEmpty()
+  category: string;
+
   @ApiProperty({ example: 5.50 })
   @IsNumber()
   @Min(0)
-  unitPrice: number;
+  price: number;
 
   @ApiProperty({ example: 100 })
   @IsNumber()

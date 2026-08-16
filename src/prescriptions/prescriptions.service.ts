@@ -13,19 +13,7 @@ export class PrescriptionsService {
   ) {}
 
   async create(createPrescriptionDto: CreatePrescriptionDto): Promise<Prescription> {
-    const prescription = this.prescriptionsRepository.create({
-      patientId: createPrescriptionDto.patientId,
-      doctorId: createPrescriptionDto.doctorId,
-      appointmentId: createPrescriptionDto.appointmentId,
-      notes: createPrescriptionDto.notes,
-      items: createPrescriptionDto.items.map(item => ({
-        medicineId: item.medicineId,
-        dosage: item.dosage,
-        frequency: item.frequency,
-        duration: item.duration,
-      })),
-    });
-
+    const prescription = this.prescriptionsRepository.create(createPrescriptionDto);
     return this.prescriptionsRepository.save(prescription);
   }
 
@@ -34,9 +22,6 @@ export class PrescriptionsService {
       relations: {
         patient: true,
         doctor: true,
-        items: {
-          medicine: true,
-        }
       }
     });
   }
@@ -50,9 +35,6 @@ export class PrescriptionsService {
       relations: {
         patient: { user: true },
         doctor: { user: true },
-        items: {
-          medicine: true,
-        }
       }
     });
   }
@@ -63,9 +45,6 @@ export class PrescriptionsService {
       relations: {
         patient: true,
         doctor: true,
-        items: {
-          medicine: true,
-        }
       }
     });
     if (!prescription) {
@@ -76,10 +55,7 @@ export class PrescriptionsService {
 
   async update(id: string, updatePrescriptionDto: UpdatePrescriptionDto): Promise<Prescription> {
     const prescription = await this.findOne(id);
-    // Since items are nested, a simple Object.assign is usually not enough for items update
-    // But for simplicity, we'll allow updating the top-level notes/status.
-    if (updatePrescriptionDto.notes) prescription.notes = updatePrescriptionDto.notes;
-    
+    this.prescriptionsRepository.merge(prescription, updatePrescriptionDto);
     return this.prescriptionsRepository.save(prescription);
   }
 

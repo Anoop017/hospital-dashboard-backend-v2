@@ -11,21 +11,25 @@ export class CreateMedicalRecordDto {
   @IsUUID()
   doctorId?: string;
 
+  @ApiProperty({ example: 'Viral Fever' })
+  @IsString()
+  diagnosis: string;
+
+  @ApiProperty({ example: 'High temperature, headache' })
+  @IsString()
+  symptoms: string;
+
+  @ApiProperty({ example: 'Prescribed paracetamol' })
+  @IsString()
+  treatment: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsUUID()
-  appointmentId?: string;
-
-  @ApiProperty({ example: 'diagnosis' })
   @IsString()
-  recordType: string;
-
-  @ApiProperty({ example: 'Patient diagnosed with seasonal flu.' })
-  @IsString()
-  description: string;
+  notes?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
-  attachments?: string;
+  @IsString() // Can also use @IsDateString() if preferred
+  recordDate?: Date;
 }

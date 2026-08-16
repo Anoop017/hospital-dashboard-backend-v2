@@ -22,7 +22,6 @@ export class MedicalRecordsService {
       relations: {
         patient: { user: true },
         doctor: { user: true },
-        appointment: true,
       },
     });
   }
@@ -36,7 +35,6 @@ export class MedicalRecordsService {
       relations: {
         patient: { user: true },
         doctor: { user: true },
-        appointment: true,
       },
     });
   }
@@ -47,7 +45,6 @@ export class MedicalRecordsService {
       relations: {
         patient: { user: true },
         doctor: { user: true },
-        appointment: true,
       },
     });
     if (!record) {
@@ -61,7 +58,6 @@ export class MedicalRecordsService {
       where: { patientId },
       relations: {
         doctor: { user: true },
-        appointment: true,
       },
     });
   }

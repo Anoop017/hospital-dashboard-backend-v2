@@ -2,7 +2,7 @@ import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
-import { Appointment } from '../../appointments/entities/appointment.entity';
+
 
 @Entity('medical_records')
 export class MedicalRecord extends BaseEntity {
@@ -20,19 +20,18 @@ export class MedicalRecord extends BaseEntity {
   @Column({ nullable: true })
   doctorId: string;
 
-  @ManyToOne(() => Appointment, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'appointmentId' })
-  appointment: Appointment;
-
-  @Column({ nullable: true })
-  appointmentId: string;
-
   @Column()
-  recordType: string; // diagnosis, prescription, lab_result, notes
+  diagnosis: string;
 
   @Column({ type: 'text' })
-  description: string;
+  symptoms: string;
 
-  @Column({ type: 'text', nullable: true }) // simple JSON string or URL
-  attachments: string;
+  @Column({ type: 'text' })
+  treatment: string;
+
+  @Column({ type: 'text', nullable: true })
+  notes: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  recordDate: Date;
 }

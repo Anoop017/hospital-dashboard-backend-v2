@@ -11,17 +11,17 @@ export class Medicine {
   @Column()
   manufacturer: string;
 
+  @Column()
+  category: string;
+
   @Column({ type: 'decimal', precision: 10, scale: 2 })
-  unitPrice: number;
+  price: number;
 
   @Column({ type: 'int', default: 0 })
   stockQuantity: number;
 
   @Column({ type: 'date', nullable: true })
   expiryDate: string;
-
-  @Column({ default: 'active' })
-  status: string;
 
   @CreateDateColumn()
   createdAt: Date;

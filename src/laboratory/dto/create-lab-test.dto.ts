@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsUUID, IsNumber, Min, IsOptional } from 'class-validator';
+import { IsString, IsNotEmpty, IsUUID, IsNumber, Min, IsOptional, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateLabTestDto {
@@ -17,9 +17,28 @@ export class CreateLabTestDto {
   @IsNotEmpty()
   testName: string;
 
-  @ApiPropertyOptional({ example: 100.00 })
-  @IsNumber()
-  @Min(0)
+  @ApiProperty({ example: 'Blood Test' })
+  @IsString()
+  @IsNotEmpty()
+  testType: string;
+
+  @ApiPropertyOptional({ example: 'pending' })
+  @IsString()
   @IsOptional()
-  cost?: number;
+  status?: string;
+
+  @ApiPropertyOptional({ example: 'Hemoglobin: 14g/dL' })
+  @IsString()
+  @IsOptional()
+  result?: string;
+
+  @ApiPropertyOptional()
+  @IsDateString()
+  @IsOptional()
+  testDate?: Date;
+
+  @ApiPropertyOptional({ example: 'https://storage.example.com/reports/123.pdf' })
+  @IsString()
+  @IsOptional()
+  reportUrl?: string;
 }

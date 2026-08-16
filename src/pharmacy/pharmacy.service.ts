@@ -21,34 +21,33 @@ export class PharmacyService {
 
     try {
       const prescription = await queryRunner.manager.findOne(Prescription, { 
-        where: { id: prescriptionId },
-        relations: { items: { medicine: true } }
+        where: { id: prescriptionId }
       });
 
       if (!prescription) {
         throw new NotFoundException(`Prescription with ID ${prescriptionId} not found`);
       }
 
-      if (prescription.status === 'fulfilled') {
-        throw new BadRequestException('Prescription is already fulfilled');
+      // Find the medicine by name (string matching)
+      const medicine = await queryRunner.manager.findOne(Medicine, {
+        where: { name: prescription.medication }
+      });
+
+      if (!medicine) {
+        throw new BadRequestException(`Medicine ${prescription.medication} not found in pharmacy inventory`);
       }
 
-      for (const item of prescription.items) {
-        const medicine = item.medicine;
-        // Simple 1-to-1 deduction for now (assuming dosage strings map to 1 unit per item)
-        // In a real scenario, you'd calculate exact units based on frequency * duration.
-        const deductionUnits = 1; 
+      const deductionUnits = 1; 
 
-        if (medicine.stockQuantity < deductionUnits) {
-          throw new BadRequestException(`Not enough stock for medicine ${medicine.name}`);
-        }
-
-        medicine.stockQuantity -= deductionUnits;
-        await queryRunner.manager.save(Medicine, medicine);
+      if (medicine.stockQuantity < deductionUnits) {
+        throw new BadRequestException(`Not enough stock for medicine ${medicine.name}`);
       }
 
-      prescription.status = 'fulfilled';
-      const updatedPrescription = await queryRunner.manager.save(Prescription, prescription);
+      medicine.stockQuantity -= deductionUnits;
+      await queryRunner.manager.save(Medicine, medicine);
+
+      // Status was removed from Prescription schema, so we just return it.
+      const updatedPrescription = prescription;
 
       await queryRunner.commitTransaction();
       return updatedPrescription;
