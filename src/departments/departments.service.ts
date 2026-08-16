@@ -43,6 +43,8 @@ export class DepartmentsService {
 
   async remove(id: string): Promise<void> {
     const department = await this.findOne(id);
+    department.name = `${department.name}_deleted_${Date.now()}`;
+    await this.departmentsRepository.save(department);
     await this.departmentsRepository.softRemove(department);
   }
 }

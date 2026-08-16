@@ -46,6 +46,8 @@ export class WardsService {
 
   async remove(id: string): Promise<void> {
     const ward = await this.findOne(id);
+    ward.name = `${ward.name}_deleted_${Date.now()}`;
+    await this.wardsRepository.save(ward);
     await this.wardsRepository.softRemove(ward);
   }
 }

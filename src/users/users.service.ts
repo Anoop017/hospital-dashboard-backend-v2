@@ -173,6 +173,11 @@ export class UsersService {
 
   async remove(id: string): Promise<void> {
     const user = await this.findById(id);
+    user.email = `${user.email}_deleted_${Date.now()}`;
+    if (user.mobile) {
+      user.mobile = `${user.mobile}_deleted_${Date.now()}`;
+    }
+    await this.usersRepository.save(user);
     await this.usersRepository.softRemove(user);
   }
 }

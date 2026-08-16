@@ -49,6 +49,8 @@ export class MedicinesService {
 
   async remove(id: string): Promise<void> {
     const medicine = await this.findOne(id);
+    medicine.name = `${medicine.name}_deleted_${Date.now()}`;
+    await this.medicinesRepository.save(medicine);
     await this.medicinesRepository.softRemove(medicine);
   }
 }
