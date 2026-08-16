@@ -12,6 +12,9 @@ import { LabTest } from '../laboratory/entities/lab-test.entity';
 import { Admission } from '../admissions/entities/admission.entity';
 import { Bed } from '../beds/entities/bed.entity';
 
+import { User } from '../users/entities/user.entity';
+import { Ward } from '../wards/entities/ward.entity';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -24,6 +27,8 @@ import { Bed } from '../beds/entities/bed.entity';
       LabTest,
       Admission,
       Bed,
+      User,
+      Ward,
     ]),
   ],
   controllers: [DashboardController],
