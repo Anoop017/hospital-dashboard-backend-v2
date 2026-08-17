@@ -5,7 +5,12 @@ import { CreateUserDto } from '../../users/dto/create-user.dto';
 import { CreatePatientDto } from './create-patient.dto';
 import { OmitType } from '@nestjs/swagger';
 
-class PatientDataDto extends OmitType(CreatePatientDto, ['userId'] as const) {}
+import { IsOptional } from 'class-validator';
+
+class PatientDataDto extends OmitType(CreatePatientDto, ['userId'] as const) {
+  @IsOptional()
+  userId?: string;
+}
 
 export class CreatePatientWithUserDto {
   @ApiProperty({ type: CreateUserDto })

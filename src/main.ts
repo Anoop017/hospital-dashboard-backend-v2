@@ -17,6 +17,9 @@ async function bootstrap() {
   });
   const configService = app.get(ConfigService);
 
+  // Enable graceful shutdown to release the port
+  app.enableShutdownHooks();
+
   // Security
   app.use(helmet());
   app.enableCors({

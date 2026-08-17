@@ -3,6 +3,7 @@ import { BaseEntity } from '../../common/entities/base.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
 import { Bed } from '../../beds/entities/bed.entity';
+import { AdmissionStatus } from '../../common/enums/admission-status.enum';
 
 @Entity('admissions')
 export class Admission extends BaseEntity {
@@ -33,8 +34,8 @@ export class Admission extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   dischargeDate: Date;
 
-  @Column({ default: 'admitted' }) // admitted, discharged, transferred
-  status: string;
+  @Column({ type: 'enum', enum: AdmissionStatus, default: AdmissionStatus.ADMITTED })
+  status: AdmissionStatus;
 
   @Column({ type: 'text' })
   reason: string;

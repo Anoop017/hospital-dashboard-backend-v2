@@ -81,31 +81,33 @@ export class PatientsService {
       }
     });
 
-    return patients.map((p, index) => {
-      let age = null;
-      if (p.dateOfBirth) {
-        const dob = new Date(p.dateOfBirth);
-        const ageDifMs = Date.now() - dob.getTime();
-        const ageDate = new Date(ageDifMs);
-        age = Math.abs(ageDate.getUTCFullYear() - 1970);
-      }
+    return patients
+      .filter(p => p.user !== null)
+      .map((p, index) => {
+        let age = null;
+        if (p.dateOfBirth) {
+          const dob = new Date(p.dateOfBirth);
+          const ageDifMs = Date.now() - dob.getTime();
+          const ageDate = new Date(ageDifMs);
+          age = Math.abs(ageDate.getUTCFullYear() - 1970);
+        }
 
-      return {
-        id: p.id,
-        no: index + 1,
-        name: p.user ? `${p.user.firstName} ${p.user.lastName}` : 'Unknown',
-        room: roomMap.get(p.id) || 'Outpatient',
-        age: age,
-        dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth).toISOString().split('T')[0] : null,
-        status: p.status === 'active' ? 'Active' : 'Inactive',
-        email: p.user?.email || '-',
-        phone: p.user?.mobile || '-'
-      };
-    });
+        return {
+          id: p.id,
+          no: index + 1,
+          name: p.user ? `${p.user.firstName} ${p.user.lastName}` : 'Unknown',
+          room: roomMap.get(p.id) || 'Outpatient',
+          age: age,
+          dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth).toISOString().split('T')[0] : null,
+          status: p.status === 'active' ? 'Active' : 'Inactive',
+          email: p.user?.email || '-',
+          phone: p.user?.mobile || '-'
+        };
+      });
   }
 
   async findAll(): Promise<Patient[]> {
-    return this.patientsRepository.find({
+    const patients = await this.patientsRepository.find({
       relations: {
         user: true,
         emergencyContacts: true,
@@ -113,6 +115,7 @@ export class PatientsService {
         conditions: true,
       },
     });
+    return patients.filter(p => p.user !== null);
   }
 
   async findOneByUserId(userId: string): Promise<Patient> {

@@ -19,7 +19,7 @@ export class LaboratoryService {
 
   async findAll(): Promise<LabTest[]> {
     return this.labTestsRepository.find({
-      relations: { patient: true, doctor: true }
+      relations: { patient: { user: true }, doctor: { user: true } }
     });
   }
 
@@ -36,7 +36,7 @@ export class LaboratoryService {
   async findOne(id: string): Promise<LabTest> {
     const labTest = await this.labTestsRepository.findOne({ 
       where: { id },
-      relations: { patient: true, doctor: true }
+      relations: { patient: { user: true }, doctor: { user: true } }
     });
     if (!labTest) {
       throw new NotFoundException(`Lab test with ID ${id} not found`);

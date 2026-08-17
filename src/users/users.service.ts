@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -17,6 +17,7 @@ export class UsersService {
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
     private configService: ConfigService,
+    private dataSource: DataSource,
   ) { }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -179,5 +180,10 @@ export class UsersService {
     }
     await this.usersRepository.save(user);
     await this.usersRepository.softRemove(user);
+
+    // Cascade soft delete to associated profiles
+    await this.dataSource.getRepository('Patient').softDelete({ userId: id });
+    await this.dataSource.getRepository('Doctor').softDelete({ userId: id });
+    await this.dataSource.getRepository('Staff').softDelete({ userId: id });
   }
 }

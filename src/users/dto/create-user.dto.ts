@@ -1,4 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString, IsOptional, IsArray, IsEnum } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../../common/enums/role.enum';
 
@@ -35,6 +36,7 @@ export class CreateUserDto {
     description: 'Array of roles to assign to the new user'
   })
   @IsArray()
+  @Transform(({ value }) => Array.isArray(value) ? value.map(v => typeof v === 'string' ? v.toLowerCase() : v) : value)
   @IsEnum(Role, { each: true })
   @IsOptional()
   roles?: Role[];

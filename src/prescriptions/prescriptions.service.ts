@@ -20,8 +20,8 @@ export class PrescriptionsService {
   async findAll(): Promise<Prescription[]> {
     return this.prescriptionsRepository.find({
       relations: {
-        patient: true,
-        doctor: true,
+        patient: { user: true },
+        doctor: { user: true },
       }
     });
   }
@@ -43,8 +43,8 @@ export class PrescriptionsService {
     const prescription = await this.prescriptionsRepository.findOne({ 
       where: { id },
       relations: {
-        patient: true,
-        doctor: true,
+        patient: { user: true },
+        doctor: { user: true },
       }
     });
     if (!prescription) {
