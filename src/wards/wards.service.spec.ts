@@ -23,6 +23,8 @@ describe('WardsService', () => {
 
   it('should throw ConflictException if ward name exists', async () => {
     mockRepo.findOne.mockResolvedValue({ id: '1' });
-    await expect(service.create({ name: 'Ward A', capacity: 10, floor: 1 })).rejects.toThrow(ConflictException);
+    await expect(
+      service.create({ name: 'Ward A', type: 'General', capacity: 10, floor: '1st Floor' }),
+    ).rejects.toThrow(ConflictException);
   });
 });

@@ -23,8 +23,18 @@ export class BedsService {
     return this.bedsRepository.save(bed);
   }
 
-  async findAll(): Promise<Bed[]> {
-    return this.bedsRepository.find({ relations: { ward: true } });
+  async findAll(wardId?: string, status?: string): Promise<Bed[]> {
+    const qb = this.bedsRepository.createQueryBuilder('bed').leftJoinAndSelect('bed.ward', 'ward');
+
+    if (wardId) {
+      qb.andWhere('bed.wardId = :wardId', { wardId });
+    }
+
+    if (status) {
+      qb.andWhere('bed.status = :status', { status });
+    }
+
+    return qb.getMany();
   }
 
   async findOne(id: string): Promise<Bed> {
@@ -47,5 +57,46 @@ export class BedsService {
   async remove(id: string): Promise<void> {
     const bed = await this.findOne(id);
     await this.bedsRepository.softRemove(bed);
+  }
+
+  async getAvailabilityMatrix() {
+    const beds = await this.bedsRepository.find({ relations: { ward: true } });
+
+    const wardMap = new Map<string, { wardId: string; wardName: string; wardType: string; totalBeds: number; availableBeds: number; occupiedBeds: number; beds: any[] }>();
+
+    beds.forEach((bed) => {
+      const wardId = bed.wardId || 'unassigned';
+      const wardName = bed.ward?.name || 'Unassigned Ward';
+      const wardType = bed.ward?.type || 'General';
+
+      if (!wardMap.has(wardId)) {
+        wardMap.set(wardId, {
+          wardId,
+          wardName,
+          wardType,
+          totalBeds: 0,
+          availableBeds: 0,
+          occupiedBeds: 0,
+          beds: [],
+        });
+      }
+
+      const wardData = wardMap.get(wardId)!;
+      wardData.totalBeds++;
+      if (bed.status === 'available') {
+        wardData.availableBeds++;
+      } else {
+        wardData.occupiedBeds++;
+      }
+
+      wardData.beds.push({
+        id: bed.id,
+        bedNumber: bed.bedNumber,
+        status: bed.status,
+        updatedAt: bed.updatedAt,
+      });
+    });
+
+    return Array.from(wardMap.values());
   }
 }

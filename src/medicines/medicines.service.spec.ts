@@ -23,6 +23,14 @@ describe('MedicinesService', () => {
 
   it('should throw ConflictException if medicine name exists', async () => {
     mockRepo.findOne.mockResolvedValue({ id: '1' });
-    await expect(service.create({ name: 'Paracetamol', manufacturer: 'A', unitPrice: 1, stockQuantity: 10 })).rejects.toThrow(ConflictException);
+    await expect(
+      service.create({
+        name: 'Paracetamol',
+        manufacturer: 'PharmaCorp',
+        category: 'Analgesics',
+        price: 5.5,
+        stockQuantity: 100,
+      }),
+    ).rejects.toThrow(ConflictException);
   });
 });

@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Query, Request } from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { UpdateBillDto } from './dto/update-bill.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { QueryBillDto } from './dto/query-bill.dto';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -23,18 +24,44 @@ export class BillingController {
     return this.billingService.createBill(createBillDto);
   }
 
+  @Get('stats')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.RECEPTIONIST)
+  @ApiOperation({ summary: 'Get billing KPI analytics & revenue overview' })
+  getBillingStats() {
+    return this.billingService.getBillingStats();
+  }
+
+  @Get('me')
+  @Roles(Role.PATIENT)
+  @ApiOperation({ summary: 'Get bills for the current logged-in patient' })
+  findMyBills(@Request() req: any, @Query() queryDto: QueryBillDto) {
+    const userId = req.user.userId || req.user.sub;
+    return this.billingService.findMyBills(userId, queryDto);
+  }
+
   @Get('bills')
   @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.STAFF)
-  @ApiOperation({ summary: 'Get all bills' })
-  findAllBills() {
-    return this.billingService.findAllBills();
+  @ApiOperation({ summary: 'Get all bills with pagination, search, and filters' })
+  findAllBills(@Query() queryDto: QueryBillDto) {
+    return this.billingService.findAllBills(queryDto);
+  }
+
+  @Get('bills/:id/receipt')
+  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT)
+  @ApiOperation({ summary: 'Get printable invoice/receipt details for a bill' })
+  getReceipt(@Param('id') id: string, @Request() req: any) {
+    const userId = req.user.userId || req.user.sub;
+    const roles = req.user.roles || [];
+    return this.billingService.getReceipt(id, userId, roles);
   }
 
   @Get('bills/:id')
   @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT)
   @ApiOperation({ summary: 'Get a bill by ID' })
-  findOneBill(@Param('id') id: string) {
-    return this.billingService.findOneBill(id);
+  findOneBill(@Param('id') id: string, @Request() req: any) {
+    const userId = req.user.userId || req.user.sub;
+    const roles = req.user.roles || [];
+    return this.billingService.findOneBill(id, userId, roles);
   }
 
   @Patch('bills/:id')

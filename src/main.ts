@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { XssInterceptor } from './common/interceptors/xss.interceptor';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -33,7 +34,7 @@ async function bootstrap() {
 
   // Global Filters & Interceptors
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.useGlobalInterceptors(new XssInterceptor());
+  app.useGlobalInterceptors(new XssInterceptor(), new TransformInterceptor());
 
   // Validation
   app.useGlobalPipes(

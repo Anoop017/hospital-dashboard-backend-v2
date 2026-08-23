@@ -4,10 +4,12 @@ import { Repository } from 'typeorm';
 import { Doctor } from './entities/doctor.entity';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
-
+import { QueryDoctorDto } from './dto/query-doctor.dto';
 import { UsersService } from '../users/users.service';
 import { CreateDoctorWithUserDto } from './dto/create-doctor-with-user.dto';
 import { Role as RoleEnum } from '../common/enums/role.enum';
+import { PageDto } from '../common/pagination/page.dto';
+import { PageMetaDto } from '../common/pagination/page-meta.dto';
 
 @Injectable()
 export class DoctorsService {
@@ -37,13 +39,37 @@ export class DoctorsService {
     if (existingLicense) {
       throw new ConflictException('License number is already registered');
     }
-    
+
     const doctor = this.doctorsRepository.create(createDoctorDto);
     return this.doctorsRepository.save(doctor);
   }
 
-  async findAll(): Promise<Doctor[]> {
-    return this.doctorsRepository.find({ relations: { user: true } });
+  async findAll(queryDto?: QueryDoctorDto): Promise<PageDto<Doctor>> {
+    const qb = this.doctorsRepository
+      .createQueryBuilder('doctor')
+      .leftJoinAndSelect('doctor.user', 'user');
+
+    if (queryDto?.specialization) {
+      qb.andWhere('LOWER(doctor.specialization) LIKE LOWER(:spec)', { spec: `%${queryDto.specialization}%` });
+    }
+
+    if (queryDto?.search) {
+      qb.andWhere(
+        '(LOWER(user.firstName) LIKE LOWER(:search) OR LOWER(user.lastName) LIKE LOWER(:search) OR LOWER(doctor.specialization) LIKE LOWER(:search))',
+        { search: `%${queryDto.search}%` },
+      );
+    }
+
+    qb.orderBy('user.firstName', 'ASC');
+
+    const skip = queryDto?.skip || 0;
+    const take = queryDto?.take || 10;
+    qb.skip(skip).take(take);
+
+    const [doctors, itemCount] = await qb.getManyAndCount();
+    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+
+    return new PageDto(doctors.filter((d) => d.user !== null), pageMetaDto);
   }
 
   async findOneByUserId(userId: string): Promise<Doctor> {

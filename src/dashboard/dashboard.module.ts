@@ -11,9 +11,9 @@ import { Prescription } from '../prescriptions/entities/prescription.entity';
 import { LabTest } from '../laboratory/entities/lab-test.entity';
 import { Admission } from '../admissions/entities/admission.entity';
 import { Bed } from '../beds/entities/bed.entity';
-
 import { User } from '../users/entities/user.entity';
 import { Ward } from '../wards/entities/ward.entity';
+import { Bill } from '../billing/entities/bill.entity';
 
 @Module({
   imports: [
@@ -29,6 +29,7 @@ import { Ward } from '../wards/entities/ward.entity';
       Bed,
       User,
       Ward,
+      Bill,
     ]),
   ],
   controllers: [DashboardController],

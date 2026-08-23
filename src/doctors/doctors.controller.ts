@@ -1,8 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { CreateDoctorWithUserDto } from './dto/create-doctor-with-user.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
+import { QueryDoctorDto } from './dto/query-doctor.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -31,17 +32,18 @@ export class DoctorsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT, Role.NURSE)
-  @ApiOperation({ summary: 'Get all doctors' })
-  findAll() {
-    return this.doctorsService.findAll();
+  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT, Role.NURSE, Role.DOCTOR)
+  @ApiOperation({ summary: 'Get all doctors with pagination, search, and department filter' })
+  findAll(@Query() queryDto: QueryDoctorDto) {
+    return this.doctorsService.findAll(queryDto);
   }
 
   @Get('me')
   @Roles(Role.DOCTOR)
   @ApiOperation({ summary: 'Get current doctor profile' })
   findMe(@Request() req: any) {
-    return this.doctorsService.findOneByUserId(req.user.sub);
+    const userId = req.user.userId || req.user.sub;
+    return this.doctorsService.findOneByUserId(userId);
   }
 
   @Get(':id')

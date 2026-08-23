@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { AdmissionsService } from './admissions.service';
 import { CreateAdmissionDto } from './dto/create-admission.dto';
 import { UpdateAdmissionDto } from './dto/update-admission.dto';
+import { QueryAdmissionDto } from './dto/query-admission.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -24,28 +25,31 @@ export class AdmissionsController {
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
-  @ApiOperation({ summary: 'Get all admissions' })
-  findAll() {
-    return this.admissionsService.findAll();
+  @ApiOperation({ summary: 'Get all admissions with pagination, search, and filters' })
+  findAll(@Query() queryDto: QueryAdmissionDto) {
+    return this.admissionsService.findAll(queryDto);
   }
 
   @Get('me')
   @Roles(Role.PATIENT, Role.DOCTOR)
   @ApiOperation({ summary: 'Get my admissions' })
-  findMe(@Request() req: any) {
-    return this.admissionsService.findMy(req.user.sub);
+  findMe(@Request() req: any, @Query() queryDto: QueryAdmissionDto) {
+    const userId = req.user.userId || req.user.sub;
+    return this.admissionsService.findMy(userId, queryDto);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF, Role.PATIENT)
   @ApiOperation({ summary: 'Get an admission by ID' })
-  findOne(@Param('id') id: string) {
-    return this.admissionsService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: any) {
+    const userId = req.user.userId || req.user.sub;
+    const roles = req.user.roles || [];
+    return this.admissionsService.findOne(id, userId, roles);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
-  @ApiOperation({ summary: 'Update an admission (e.g., discharge)' })
+  @ApiOperation({ summary: 'Update an admission (e.g. discharge, transfer bed)' })
   update(@Param('id') id: string, @Body() updateAdmissionDto: UpdateAdmissionDto) {
     return this.admissionsService.update(id, updateAdmissionDto);
   }

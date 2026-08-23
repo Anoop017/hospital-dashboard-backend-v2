@@ -1,11 +1,12 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateBillDto } from './create-bill.dto';
-import { IsString, IsOptional } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsOptional } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { BillStatusFilter } from './query-bill.dto';
 
 export class UpdateBillDto extends PartialType(CreateBillDto) {
-  @ApiProperty({ required: false, example: 'paid' })
+  @ApiPropertyOptional({ enum: BillStatusFilter, example: BillStatusFilter.PAID })
   @IsOptional()
-  @IsString()
-  status?: string;
+  @IsEnum(BillStatusFilter)
+  status?: BillStatusFilter;
 }

@@ -1,14 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { CreatePatientWithUserDto } from './dto/create-patient-with-user.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { QueryPatientDto } from './dto/query-patient.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
-import { AuditLogInterceptor } from '../common/interceptors/audit-log.interceptor';
 
 @ApiTags('patients')
 @ApiBearerAuth()
@@ -38,25 +38,35 @@ export class PatientsController {
     return this.patientsService.getOverview(filter);
   }
 
-  @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  @ApiOperation({ summary: 'Get all patients' })
-  findAll() {
-    return this.patientsService.findAll();
-  }
-
   @Get('me')
   @Roles(Role.PATIENT)
   @ApiOperation({ summary: 'Get current patient profile' })
   findMe(@Request() req: any) {
-    return this.patientsService.findOneByUserId(req.user.sub);
+    const userId = req.user.userId || req.user.sub;
+    return this.patientsService.findOneByUserId(userId);
+  }
+
+  @Get(':id/summary')
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @ApiOperation({ summary: 'Get 360-degree patient timeline & clinical summary' })
+  getSummary(@Param('id') id: string) {
+    return this.patientsService.getPatientSummary(id);
+  }
+
+  @Get()
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @ApiOperation({ summary: 'Get all patients with pagination, search, and filters' })
+  findAll(@Query() queryDto: QueryPatientDto) {
+    return this.patientsService.findAll(queryDto);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
   @ApiOperation({ summary: 'Get a patient by ID' })
-  findOne(@Param('id') id: string) {
-    return this.patientsService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: any) {
+    const userId = req.user.userId || req.user.sub;
+    const roles = req.user.roles || [];
+    return this.patientsService.findOne(id, userId, roles);
   }
 
   @Patch(':id')

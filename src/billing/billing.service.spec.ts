@@ -3,6 +3,8 @@ import { BillingService } from './billing.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Bill } from './entities/bill.entity';
 import { Payment } from './entities/payment.entity';
+import { Patient } from '../patients/entities/patient.entity';
+import { PaymentMethod } from './dto/create-payment.dto';
 import { MockRepository, MockQueryRunner } from '../common/test-utils/mock-repository';
 import { DataSource } from 'typeorm';
 
@@ -15,10 +17,11 @@ describe('BillingService', () => {
         BillingService,
         { provide: getRepositoryToken(Bill), useClass: MockRepository },
         { provide: getRepositoryToken(Payment), useClass: MockRepository },
-        { 
-          provide: DataSource, 
-          useValue: { createQueryRunner: jest.fn().mockReturnValue(MockQueryRunner) } 
-        }
+        { provide: getRepositoryToken(Patient), useClass: MockRepository },
+        {
+          provide: DataSource,
+          useValue: { createQueryRunner: jest.fn().mockReturnValue(MockQueryRunner) },
+        },
       ],
     }).compile();
 
@@ -29,9 +32,9 @@ describe('BillingService', () => {
     const bill = { id: 'b1', totalAmount: 100, paidAmount: 0, status: 'unpaid' };
     MockQueryRunner.manager.findOne.mockResolvedValue(bill);
     MockQueryRunner.manager.create.mockReturnValue({ id: 'p1', amount: 50 });
-    
-    const result = await service.makePayment({ billId: 'b1', amount: 50, paymentMethod: 'cash' });
-    
+
+    const result = await service.makePayment({ billId: 'b1', amount: 50, paymentMethod: PaymentMethod.CASH });
+
     expect(MockQueryRunner.startTransaction).toHaveBeenCalled();
     expect(MockQueryRunner.commitTransaction).toHaveBeenCalled();
     expect(MockQueryRunner.release).toHaveBeenCalled();

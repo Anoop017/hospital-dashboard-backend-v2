@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { LaboratoryService } from './laboratory.service';
 import { CreateLabTestDto } from './dto/create-lab-test.dto';
 import { UpdateLabTestDto } from './dto/update-lab-test.dto';
+import { QueryLabTestDto } from './dto/query-lab-test.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -22,30 +23,40 @@ export class LaboratoryController {
     return this.laboratoryService.create(createLabTestDto);
   }
 
+  @Get('stats')
+  @Roles(Role.ADMIN, Role.LAB_TECHNICIAN, Role.DOCTOR)
+  @ApiOperation({ summary: 'Get lab tests overview statistics' })
+  getStats() {
+    return this.laboratoryService.getLabStats();
+  }
+
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.LAB_TECHNICIAN, Role.NURSE)
-  @ApiOperation({ summary: 'Get all lab tests' })
-  findAll() {
-    return this.laboratoryService.findAll();
+  @ApiOperation({ summary: 'Get all lab tests with pagination and filters' })
+  findAll(@Query() queryDto: QueryLabTestDto) {
+    return this.laboratoryService.findAll(queryDto);
   }
 
   @Get('me')
   @Roles(Role.PATIENT, Role.DOCTOR)
   @ApiOperation({ summary: 'Get my lab tests' })
-  findMe(@Request() req: any) {
-    return this.laboratoryService.findMy(req.user.sub);
+  findMe(@Request() req: any, @Query() queryDto: QueryLabTestDto) {
+    const userId = req.user.userId || req.user.sub;
+    return this.laboratoryService.findMy(userId, queryDto);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.LAB_TECHNICIAN, Role.NURSE, Role.PATIENT)
   @ApiOperation({ summary: 'Get lab test by id' })
-  findOne(@Param('id') id: string) {
-    return this.laboratoryService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: any) {
+    const userId = req.user.userId || req.user.sub;
+    const roles = req.user.roles || [];
+    return this.laboratoryService.findOne(id, userId, roles);
   }
 
   @Roles(Role.LAB_TECHNICIAN, Role.ADMIN, Role.DOCTOR)
-  @Put(':id')
-  @ApiOperation({ summary: 'Update a lab test (e.g. upload results)' })
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a lab test (upload results, modify status)' })
   update(@Param('id') id: string, @Body() updateLabTestDto: UpdateLabTestDto) {
     return this.laboratoryService.update(id, updateLabTestDto);
   }

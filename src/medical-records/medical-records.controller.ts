@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
 import { MedicalRecordsService } from './medical-records.service';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
 import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
+import { QueryMedicalRecordDto } from './dto/query-medical-record.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -24,16 +25,17 @@ export class MedicalRecordsController {
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
-  @ApiOperation({ summary: 'Get all medical records' })
-  findAll() {
-    return this.medicalRecordsService.findAll();
+  @ApiOperation({ summary: 'Get all medical records with pagination and search' })
+  findAll(@Query() queryDto: QueryMedicalRecordDto) {
+    return this.medicalRecordsService.findAll(queryDto);
   }
 
   @Get('me')
   @Roles(Role.PATIENT, Role.DOCTOR)
   @ApiOperation({ summary: 'Get my medical records' })
-  findMe(@Request() req: any) {
-    return this.medicalRecordsService.findMy(req.user.sub);
+  findMe(@Request() req: any, @Query() queryDto: QueryMedicalRecordDto) {
+    const userId = req.user.userId || req.user.sub;
+    return this.medicalRecordsService.findMy(userId, queryDto);
   }
 
   @Get('patient/:patientId')
@@ -46,11 +48,13 @@ export class MedicalRecordsController {
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT)
   @ApiOperation({ summary: 'Get a medical record by ID' })
-  findOne(@Param('id') id: string) {
-    return this.medicalRecordsService.findOne(id);
+  findOne(@Param('id') id: string, @Request() req: any) {
+    const userId = req.user.userId || req.user.sub;
+    const roles = req.user.roles || [];
+    return this.medicalRecordsService.findOne(id, userId, roles);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
   @ApiOperation({ summary: 'Update a medical record' })
   update(@Param('id') id: string, @Body() updateMedicalRecordDto: UpdateMedicalRecordDto) {
