@@ -38,7 +38,7 @@ export class PrescriptionsService {
 
     if (queryDto?.search) {
       qb.andWhere(
-        '(LOWER(patientUser.firstName) LIKE LOWER(:search) OR LOWER(patientUser.lastName) LIKE LOWER(:search) OR LOWER(prescription.instructions) LIKE LOWER(:search))',
+        '(LOWER(patientUser.firstName) LIKE LOWER(:search) OR LOWER(patientUser.lastName) LIKE LOWER(:search) OR LOWER(prescription.medication) LIKE LOWER(:search))',
         { search: `%${queryDto.search}%` },
       );
     }
@@ -55,7 +55,7 @@ export class PrescriptionsService {
     return new PageDto(prescriptions, pageMetaDto);
   }
 
-  async findMy(userId: string, queryDto?: QueryPrescriptionDto): Promise<PageDto<Prescription>> {
+  async findMy(userId: number, queryDto?: QueryPrescriptionDto): Promise<PageDto<Prescription>> {
     const qb = this.prescriptionsRepository
       .createQueryBuilder('prescription')
       .leftJoinAndSelect('prescription.patient', 'patient')
@@ -65,7 +65,7 @@ export class PrescriptionsService {
       .where('(patient.userId = :userId OR doctor.userId = :userId)', { userId });
 
     if (queryDto?.search) {
-      qb.andWhere('(LOWER(prescription.instructions) LIKE LOWER(:search))', { search: `%${queryDto.search}%` });
+      qb.andWhere('(LOWER(prescription.medication) LIKE LOWER(:search))', { search: `%${queryDto.search}%` });
     }
 
     qb.orderBy('prescription.createdAt', 'DESC');
@@ -80,7 +80,7 @@ export class PrescriptionsService {
     return new PageDto(prescriptions, pageMetaDto);
   }
 
-  async findOne(id: string, userId?: string, roles: string[] = []): Promise<Prescription> {
+  async findOne(id: number, userId?: number, roles: string[] = []): Promise<Prescription> {
     const prescription = await this.prescriptionsRepository.findOne({
       where: { id },
       relations: {
@@ -103,13 +103,13 @@ export class PrescriptionsService {
     return prescription;
   }
 
-  async update(id: string, updatePrescriptionDto: UpdatePrescriptionDto): Promise<Prescription> {
+  async update(id: number, updatePrescriptionDto: UpdatePrescriptionDto): Promise<Prescription> {
     const prescription = await this.findOne(id);
     this.prescriptionsRepository.merge(prescription, updatePrescriptionDto);
     return this.prescriptionsRepository.save(prescription);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const prescription = await this.findOne(id);
     await this.prescriptionsRepository.softRemove(prescription);
   }

@@ -12,21 +12,21 @@ export class Bill extends BaseEntity {
   patient: Patient;
 
   @Column()
-  patientId: string;
+  patientId: number;
 
   @ManyToOne(() => Admission, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'admissionId' })
   admission: Admission;
 
   @Column({ nullable: true })
-  admissionId: string;
+  admissionId: number;
 
   @ManyToOne(() => Appointment, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'appointmentId' })
   appointment: Appointment;
 
   @Column({ nullable: true })
-  appointmentId: string;
+  appointmentId: number;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   totalAmount: number;

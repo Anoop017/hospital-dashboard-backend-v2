@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
 import { LaboratoryService } from './laboratory.service';
 import { CreateLabTestDto } from './dto/create-lab-test.dto';
 import { UpdateLabTestDto } from './dto/update-lab-test.dto';
@@ -41,15 +41,15 @@ export class LaboratoryController {
   @Roles(Role.PATIENT, Role.DOCTOR)
   @ApiOperation({ summary: 'Get my lab tests' })
   findMe(@Request() req: any, @Query() queryDto: QueryLabTestDto) {
-    const userId = req.user.userId || req.user.sub;
+    const userId = Number(req.user.userId || req.user.sub);
     return this.laboratoryService.findMy(userId, queryDto);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.LAB_TECHNICIAN, Role.NURSE, Role.PATIENT)
   @ApiOperation({ summary: 'Get lab test by id' })
-  findOne(@Param('id') id: string, @Request() req: any) {
-    const userId = req.user.userId || req.user.sub;
+  findOne(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+    const userId = Number(req.user.userId || req.user.sub);
     const roles = req.user.roles || [];
     return this.laboratoryService.findOne(id, userId, roles);
   }
@@ -57,14 +57,14 @@ export class LaboratoryController {
   @Roles(Role.LAB_TECHNICIAN, Role.ADMIN, Role.DOCTOR)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a lab test (upload results, modify status)' })
-  update(@Param('id') id: string, @Body() updateLabTestDto: UpdateLabTestDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateLabTestDto: UpdateLabTestDto) {
     return this.laboratoryService.update(id, updateLabTestDto);
   }
 
   @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a lab test' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.laboratoryService.remove(id);
   }
 }

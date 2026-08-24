@@ -9,7 +9,7 @@ export class PatientAllergy extends BaseEntity {
   patient: Patient;
 
   @Column()
-  patientId: string;
+  patientId: number;
 
   @Column()
   allergen: string;

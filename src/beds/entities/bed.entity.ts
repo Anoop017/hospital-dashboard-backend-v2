@@ -9,7 +9,7 @@ export class Bed extends BaseEntity {
   ward: Ward;
 
   @Column()
-  wardId: string;
+  wardId: number;
 
   @Column()
   bedNumber: string; // e.g., Bed-01, ICU-04

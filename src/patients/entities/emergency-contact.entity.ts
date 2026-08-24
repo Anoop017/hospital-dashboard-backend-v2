@@ -9,7 +9,7 @@ export class EmergencyContact extends BaseEntity {
   patient: Patient;
 
   @Column()
-  patientId: string;
+  patientId: number;
 
   @Column()
   name: string;

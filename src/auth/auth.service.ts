@@ -45,8 +45,8 @@ export class AuthService {
   async login(user: any) {
     const payload = { email: user.email, sub: user.id, roles: user.roles?.map((r: any) => r.name) || [] };
     const accessToken = this.jwtService.sign(payload);
-    
-    // Simplistic refresh token for now
+
+    // Refresh token
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get('jwt.refreshSecret'),
       expiresIn: this.configService.get('jwt.refreshExpiration'),
@@ -114,14 +114,14 @@ export class AuthService {
       });
 
       const tokenEntry = await this.refreshTokenRepo.findOne({
-        where: { token: refreshToken, userId: payload.sub, isRevoked: false },
+        where: { token: refreshToken, userId: Number(payload.sub), isRevoked: false },
       });
 
       if (!tokenEntry || tokenEntry.expiresAt < new Date()) {
         throw new UnauthorizedException('Invalid or expired refresh token');
       }
 
-      const user = await this.usersService.findById(payload.sub);
+      const user = await this.usersService.findById(Number(payload.sub));
       if (!user) {
         throw new UnauthorizedException('User not found');
       }
@@ -137,11 +137,11 @@ export class AuthService {
     }
   }
 
-  async getProfile(userId: string) {
+  async getProfile(userId: number) {
     const user = await this.usersService.findById(userId);
     const { passwordHash, ...userWithoutPassword } = user;
 
-    let profileId: string | null = null;
+    let profileId: number | null = null;
 
     const patient = await this.patientRepo.findOne({ where: { userId } });
     if (patient) {
@@ -164,10 +164,10 @@ export class AuthService {
     };
   }
 
-  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+  async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
     const user = await this.usersService.findById(userId);
     const isOldValid = await bcrypt.compare(changePasswordDto.oldPassword, user.passwordHash);
-    
+
     if (!isOldValid) {
       throw new BadRequestException('Current password is incorrect');
     }

@@ -5,7 +5,6 @@ import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-
 import { ChangePasswordDto } from './dto/change-password.dto';
 
 @ApiTags('auth')
@@ -20,7 +19,7 @@ export class AuthController {
   async login(@Body() loginDto: LoginDto) {
     const user = await this.authService.validateUser(loginDto.email, loginDto.password);
     if (!user) {
-      throw new Error('Unauthorized'); // Use UnauthorizedException from common in real implementation
+      throw new Error('Unauthorized');
     }
     return this.authService.login(user);
   }
@@ -54,7 +53,7 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   getProfile(@Request() req: any) {
-    const userId = req.user.userId || req.user.sub;
+    const userId = Number(req.user.userId || req.user.sub);
     return this.authService.getProfile(userId);
   }
 
@@ -65,7 +64,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Password successfully updated' })
   @ApiResponse({ status: 400, description: 'Current password is incorrect' })
   async changePassword(@Request() req: any, @Body() changePasswordDto: ChangePasswordDto) {
-    const userId = req.user.userId || req.user.sub;
+    const userId = Number(req.user.userId || req.user.sub);
     return this.authService.changePassword(userId, changePasswordDto);
   }
 }

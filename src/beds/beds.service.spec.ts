@@ -22,7 +22,7 @@ describe('BedsService', () => {
   });
 
   it('should throw ConflictException if bed number exists in ward', async () => {
-    mockRepo.findOne.mockResolvedValue({ id: '1' });
-    await expect(service.create({ wardId: 'w1', bedNumber: 'B1' })).rejects.toThrow(ConflictException);
+    mockRepo.findOne.mockResolvedValue({ id: 1 });
+    await expect(service.create({ wardId: 1, bedNumber: 'B1' })).rejects.toThrow(ConflictException);
   });
 });

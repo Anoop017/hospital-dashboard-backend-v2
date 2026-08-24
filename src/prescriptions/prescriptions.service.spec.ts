@@ -21,15 +21,15 @@ describe('PrescriptionsService', () => {
   });
 
   it('should create prescription', async () => {
-    mockRepo.save.mockResolvedValue({ id: '1' });
+    mockRepo.save.mockResolvedValue({ id: 1 });
     const result = await service.create({
-      patientId: 'p1',
-      doctorId: 'd1',
+      patientId: 1,
+      doctorId: 1,
       medication: 'Amoxicillin',
       dosage: '500mg',
       frequency: 'Twice daily',
       duration: '7 days',
     });
-    expect(result).toEqual({ id: '1' });
+    expect(result).toEqual({ id: 1 });
   });
 });

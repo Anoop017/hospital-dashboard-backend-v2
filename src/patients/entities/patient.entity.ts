@@ -14,7 +14,7 @@ export class Patient extends BaseEntity {
   user: User;
 
   @Column()
-  userId: string;
+  userId: number;
 
   @Column({ type: 'date', nullable: true })
   dateOfBirth: Date;

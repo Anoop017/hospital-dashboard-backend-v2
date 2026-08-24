@@ -10,14 +10,14 @@ export class Staff extends BaseEntity {
   user: User;
 
   @Column()
-  userId: string;
+  userId: number;
 
   @ManyToOne(() => Department, (department) => department.staff, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'departmentId' })
   department: Department;
 
   @Column({ nullable: true })
-  departmentId: string;
+  departmentId: number;
 
   @Column()
   jobTitle: string; // e.g., Nurse, Receptionist, Cleaner

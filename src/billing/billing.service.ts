@@ -85,7 +85,7 @@ export class BillingService {
     return new PageDto(bills, pageMetaDto);
   }
 
-  async findMyBills(userId: string, queryDto?: QueryBillDto): Promise<PageDto<Bill>> {
+  async findMyBills(userId: number, queryDto?: QueryBillDto): Promise<PageDto<Bill>> {
     const patient = await this.patientRepository.findOne({ where: { userId } });
     if (!patient) {
       throw new NotFoundException('Patient profile not found for the current user');
@@ -98,7 +98,7 @@ export class BillingService {
     return this.findAllBills(mergedQuery);
   }
 
-  async findOneBill(id: string, userId?: string, roles: string[] = []): Promise<Bill> {
+  async findOneBill(id: number, userId?: number, roles: string[] = []): Promise<Bill> {
     const bill = await this.billsRepository.findOne({
       where: { id },
       relations: {
@@ -124,7 +124,7 @@ export class BillingService {
     return bill;
   }
 
-  async updateBill(id: string, updateBillDto: UpdateBillDto): Promise<Bill> {
+  async updateBill(id: number, updateBillDto: UpdateBillDto): Promise<Bill> {
     const bill = await this.findOneBill(id);
     this.billsRepository.merge(bill, updateBillDto);
     return this.billsRepository.save(bill);
@@ -216,11 +216,11 @@ export class BillingService {
     };
   }
 
-  async getReceipt(id: string, userId?: string, roles: string[] = []) {
+  async getReceipt(id: number, userId?: number, roles: string[] = []) {
     const bill = await this.findOneBill(id, userId, roles);
 
     return {
-      invoiceNumber: `INV-${bill.id.substring(0, 8).toUpperCase()}`,
+      invoiceNumber: `INV-${String(bill.id).padStart(6, '0')}`,
       billId: bill.id,
       issueDate: bill.createdAt,
       dueDate: bill.dueDate,

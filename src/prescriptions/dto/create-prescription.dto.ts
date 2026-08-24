@@ -1,16 +1,19 @@
-import { IsString, IsNotEmpty, IsUUID, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, IsOptional, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreatePrescriptionDto {
-  @ApiProperty({ example: 'uuid-here' })
-  @IsUUID()
+  @ApiProperty({ example: 1, description: 'Patient ID' })
+  @Type(() => Number)
+  @IsInt()
   @IsNotEmpty()
-  patientId: string;
+  patientId: number;
 
-  @ApiProperty({ example: 'uuid-here' })
-  @IsUUID()
+  @ApiProperty({ example: 1, description: 'Doctor ID' })
+  @Type(() => Number)
+  @IsInt()
   @IsNotEmpty()
-  doctorId: string;
+  doctorId: number;
 
   @ApiProperty({ example: 'Amoxicillin' })
   @IsString()

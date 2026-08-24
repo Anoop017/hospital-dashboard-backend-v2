@@ -1,4 +1,4 @@
-import { Controller, Post, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Param, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { PharmacyService } from './pharmacy.service';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -16,7 +16,7 @@ export class PharmacyController {
   @Roles(Role.ADMIN, Role.PHARMACIST)
   @Post('fulfill/:prescriptionId')
   @ApiOperation({ summary: 'Fulfill a prescription and deduct stock' })
-  fulfillPrescription(@Param('prescriptionId') prescriptionId: string) {
+  fulfillPrescription(@Param('prescriptionId', ParseIntPipe) prescriptionId: number) {
     return this.pharmacyService.fulfillPrescription(prescriptionId);
   }
 }

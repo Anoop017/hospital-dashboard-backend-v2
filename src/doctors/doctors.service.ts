@@ -72,7 +72,7 @@ export class DoctorsService {
     return new PageDto(doctors.filter((d) => d.user !== null), pageMetaDto);
   }
 
-  async findOneByUserId(userId: string): Promise<Doctor> {
+  async findOneByUserId(userId: number): Promise<Doctor> {
     const doctor = await this.doctorsRepository.findOne({
       where: { userId },
       relations: { user: true },
@@ -83,7 +83,7 @@ export class DoctorsService {
     return doctor;
   }
 
-  async findOne(id: string): Promise<Doctor> {
+  async findOne(id: number): Promise<Doctor> {
     const doctor = await this.doctorsRepository.findOne({
       where: { id },
       relations: { user: true },
@@ -94,13 +94,13 @@ export class DoctorsService {
     return doctor;
   }
 
-  async update(id: string, updateDoctorDto: UpdateDoctorDto): Promise<Doctor> {
+  async update(id: number, updateDoctorDto: UpdateDoctorDto): Promise<Doctor> {
     const doctor = await this.findOne(id);
     this.doctorsRepository.merge(doctor, updateDoctorDto);
     return this.doctorsRepository.save(doctor);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const doctor = await this.findOne(id);
     doctor.licenseNumber = `${doctor.licenseNumber}_deleted_${Date.now()}`;
     await this.doctorsRepository.save(doctor);

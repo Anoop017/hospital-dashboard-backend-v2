@@ -1,21 +1,24 @@
-import { IsString, IsOptional, IsUUID, IsDateString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, IsInt, IsDateString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreateStaffDto {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'Linked User UUID' })
-  @IsUUID()
-  userId: string;
+  @ApiProperty({ example: 1, description: 'Linked User ID' })
+  @Type(() => Number)
+  @IsInt()
+  userId: number;
 
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', required: false, description: 'Department UUID' })
+  @ApiPropertyOptional({ example: 1, description: 'Department ID' })
   @IsOptional()
-  @IsUUID()
-  departmentId?: string;
+  @Type(() => Number)
+  @IsInt()
+  departmentId?: number;
 
   @ApiProperty({ example: 'Senior Nurse' })
   @IsString()
   jobTitle: string;
 
-  @ApiProperty({ example: '2026-08-01', required: false })
+  @ApiPropertyOptional({ example: '2026-08-01' })
   @IsOptional()
   @IsDateString()
   hireDate?: string;

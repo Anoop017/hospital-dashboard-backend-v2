@@ -12,21 +12,21 @@ export class Admission extends BaseEntity {
   patient: Patient;
 
   @Column()
-  patientId: string;
+  patientId: number;
 
   @ManyToOne(() => Doctor, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'admittingDoctorId' })
   admittingDoctor: Doctor;
 
   @Column({ nullable: true })
-  admittingDoctorId: string;
+  admittingDoctorId: number;
 
   @OneToOne(() => Bed)
   @JoinColumn({ name: 'bedId' })
   bed: Bed;
 
-  @Column({ nullable: true }) // nullable because they might be discharged
-  bedId: string;
+  @Column({ nullable: true })
+  bedId: number;
 
   @Column({ type: 'timestamp' })
   admissionDate: Date;

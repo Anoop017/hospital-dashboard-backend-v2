@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { CreateDoctorWithUserDto } from './dto/create-doctor-with-user.dto';
@@ -42,28 +42,28 @@ export class DoctorsController {
   @Roles(Role.DOCTOR)
   @ApiOperation({ summary: 'Get current doctor profile' })
   findMe(@Request() req: any) {
-    const userId = req.user.userId || req.user.sub;
+    const userId = Number(req.user.userId || req.user.sub);
     return this.doctorsService.findOneByUserId(userId);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT, Role.NURSE, Role.DOCTOR)
   @ApiOperation({ summary: 'Get a doctor by ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.doctorsService.findOne(id);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Update a doctor profile' })
-  update(@Param('id') id: string, @Body() updateDoctorDto: UpdateDoctorDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateDoctorDto: UpdateDoctorDto) {
     return this.doctorsService.update(id, updateDoctorDto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Soft delete a doctor profile' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.doctorsService.remove(id);
   }
 }

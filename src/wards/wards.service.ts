@@ -27,7 +27,7 @@ export class WardsService {
     return this.wardsRepository.find({ relations: { beds: true } });
   }
 
-  async findOne(id: string): Promise<Ward> {
+  async findOne(id: number): Promise<Ward> {
     const ward = await this.wardsRepository.findOne({
       where: { id },
       relations: { beds: true },
@@ -38,13 +38,13 @@ export class WardsService {
     return ward;
   }
 
-  async update(id: string, updateWardDto: UpdateWardDto): Promise<Ward> {
+  async update(id: number, updateWardDto: UpdateWardDto): Promise<Ward> {
     const ward = await this.findOne(id);
     this.wardsRepository.merge(ward, updateWardDto);
     return this.wardsRepository.save(ward);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const ward = await this.findOne(id);
     ward.name = `${ward.name}_deleted_${Date.now()}`;
     await this.wardsRepository.save(ward);

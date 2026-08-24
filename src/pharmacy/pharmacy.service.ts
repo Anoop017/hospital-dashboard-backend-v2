@@ -14,14 +14,14 @@ export class PharmacyService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async fulfillPrescription(prescriptionId: string): Promise<Prescription> {
+  async fulfillPrescription(prescriptionId: number): Promise<Prescription> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      const prescription = await queryRunner.manager.findOne(Prescription, { 
-        where: { id: prescriptionId }
+      const prescription = await queryRunner.manager.findOne(Prescription, {
+        where: { id: prescriptionId },
       });
 
       if (!prescription) {
@@ -30,14 +30,14 @@ export class PharmacyService {
 
       // Find the medicine by name (string matching)
       const medicine = await queryRunner.manager.findOne(Medicine, {
-        where: { name: prescription.medication }
+        where: { name: prescription.medication },
       });
 
       if (!medicine) {
         throw new BadRequestException(`Medicine ${prescription.medication} not found in pharmacy inventory`);
       }
 
-      const deductionUnits = 1; 
+      const deductionUnits = 1;
 
       if (medicine.stockQuantity < deductionUnits) {
         throw new BadRequestException(`Not enough stock for medicine ${medicine.name}`);
@@ -46,7 +46,6 @@ export class PharmacyService {
       medicine.stockQuantity -= deductionUnits;
       await queryRunner.manager.save(Medicine, medicine);
 
-      // Status was removed from Prescription schema, so we just return it.
       const updatedPrescription = prescription;
 
       await queryRunner.commitTransaction();

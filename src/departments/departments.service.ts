@@ -27,7 +27,7 @@ export class DepartmentsService {
     return this.departmentsRepository.find();
   }
 
-  async findOne(id: string): Promise<Department> {
+  async findOne(id: number): Promise<Department> {
     const department = await this.departmentsRepository.findOne({ where: { id } });
     if (!department) {
       throw new NotFoundException(`Department with ID ${id} not found`);
@@ -35,13 +35,13 @@ export class DepartmentsService {
     return department;
   }
 
-  async update(id: string, updateDepartmentDto: UpdateDepartmentDto): Promise<Department> {
+  async update(id: number, updateDepartmentDto: UpdateDepartmentDto): Promise<Department> {
     const department = await this.findOne(id);
     this.departmentsRepository.merge(department, updateDepartmentDto);
     return this.departmentsRepository.save(department);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const department = await this.findOne(id);
     department.name = `${department.name}_deleted_${Date.now()}`;
     await this.departmentsRepository.save(department);

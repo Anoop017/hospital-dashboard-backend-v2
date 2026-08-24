@@ -54,7 +54,7 @@ export class MedicinesService {
     return new PageDto(medicines, pageMetaDto);
   }
 
-  async findOne(id: string): Promise<Medicine> {
+  async findOne(id: number): Promise<Medicine> {
     const medicine = await this.medicinesRepository.findOne({ where: { id } });
     if (!medicine) {
       throw new NotFoundException(`Medicine with ID ${id} not found`);
@@ -62,7 +62,7 @@ export class MedicinesService {
     return medicine;
   }
 
-  async update(id: string, updateMedicineDto: UpdateMedicineDto): Promise<Medicine> {
+  async update(id: number, updateMedicineDto: UpdateMedicineDto): Promise<Medicine> {
     const medicine = await this.findOne(id);
 
     if (updateMedicineDto.name && updateMedicineDto.name !== medicine.name) {
@@ -76,7 +76,7 @@ export class MedicinesService {
     return this.medicinesRepository.save(medicine);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const medicine = await this.findOne(id);
     medicine.name = `${medicine.name}_deleted_${Date.now()}`;
     await this.medicinesRepository.save(medicine);

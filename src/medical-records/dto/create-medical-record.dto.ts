@@ -1,15 +1,18 @@
-import { IsString, IsUUID, IsOptional } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsInt, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreateMedicalRecordDto {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
-  @IsUUID()
-  patientId: string;
+  @ApiProperty({ example: 1, description: 'Patient ID' })
+  @Type(() => Number)
+  @IsInt()
+  patientId: number;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ example: 1, description: 'Doctor ID' })
   @IsOptional()
-  @IsUUID()
-  doctorId?: string;
+  @Type(() => Number)
+  @IsInt()
+  doctorId?: number;
 
   @ApiProperty({ example: 'Viral Fever' })
   @IsString()
@@ -23,13 +26,12 @@ export class CreateMedicalRecordDto {
   @IsString()
   treatment: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ required: false })
   @IsOptional()
   @IsString()
   notes?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ required: false })
   @IsOptional()
-  @IsString() // Can also use @IsDateString() if preferred
   recordDate?: Date;
 }

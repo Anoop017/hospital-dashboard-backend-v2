@@ -9,7 +9,7 @@ export class PatientCondition extends BaseEntity {
   patient: Patient;
 
   @Column()
-  patientId: string;
+  patientId: number;
 
   @Column()
   conditionName: string;

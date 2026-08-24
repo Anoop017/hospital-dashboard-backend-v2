@@ -3,7 +3,6 @@ import { BaseEntity } from '../../common/entities/base.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
 
-
 @Entity('medical_records')
 export class MedicalRecord extends BaseEntity {
   @ManyToOne(() => Patient, { onDelete: 'CASCADE' })
@@ -11,14 +10,14 @@ export class MedicalRecord extends BaseEntity {
   patient: Patient;
 
   @Column()
-  patientId: string;
+  patientId: number;
 
   @ManyToOne(() => Doctor, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'doctorId' })
   doctor: Doctor;
 
   @Column({ nullable: true })
-  doctorId: string;
+  doctorId: number;
 
   @Column()
   diagnosis: string;

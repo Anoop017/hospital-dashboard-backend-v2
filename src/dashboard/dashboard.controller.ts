@@ -16,7 +16,7 @@ export class DashboardController {
   @Get('summary')
   @ApiOperation({ summary: 'Get tailored summary metrics based on the logged-in user role' })
   getSummary(@Request() req: any) {
-    const userId = req.user.userId || req.user.sub;
+    const userId = Number(req.user.userId || req.user.sub);
     const roles = req.user.roles || [];
     return this.dashboardService.getSummary(userId, roles);
   }

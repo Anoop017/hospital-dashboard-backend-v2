@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseIntPipe } from '@nestjs/common';
 import { BedsService } from './beds.service';
 import { CreateBedDto } from './dto/create-bed.dto';
 import { UpdateBedDto } from './dto/update-bed.dto';
@@ -16,46 +16,46 @@ export class BedsController {
   constructor(private readonly bedsService: BedsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
   @ApiOperation({ summary: 'Create a new bed' })
   create(@Body() createBedDto: CreateBedDto) {
     return this.bedsService.create(createBedDto);
   }
 
   @Get('availability-matrix')
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR, Role.NURSE, Role.STAFF)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
   @ApiOperation({ summary: 'Get live bed availability matrix grouped by ward' })
   getAvailabilityMatrix() {
     return this.bedsService.getAvailabilityMatrix();
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR, Role.NURSE, Role.STAFF)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
   @ApiOperation({ summary: 'Get all beds, optionally filtered by ward or status' })
-  @ApiQuery({ name: 'wardId', required: false })
+  @ApiQuery({ name: 'wardId', required: false, type: Number })
   @ApiQuery({ name: 'status', required: false, example: 'available' })
-  findAll(@Query('wardId') wardId?: string, @Query('status') status?: string) {
-    return this.bedsService.findAll(wardId, status);
+  findAll(@Query('wardId') wardId?: number, @Query('status') status?: string) {
+    return this.bedsService.findAll(wardId ? Number(wardId) : undefined, status);
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR, Role.NURSE, Role.STAFF)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
   @ApiOperation({ summary: 'Get a bed by ID' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.bedsService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.NURSE)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
   @ApiOperation({ summary: 'Update a bed' })
-  update(@Param('id') id: string, @Body() updateBedDto: UpdateBedDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateBedDto: UpdateBedDto) {
     return this.bedsService.update(id, updateBedDto);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
   @ApiOperation({ summary: 'Delete a bed' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.bedsService.remove(id);
   }
 }

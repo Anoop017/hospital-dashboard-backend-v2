@@ -10,14 +10,14 @@ export class Appointment extends BaseEntity {
   patient: Patient;
 
   @Column()
-  patientId: string;
+  patientId: number;
 
   @ManyToOne(() => Doctor, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'doctorId' })
   doctor: Doctor;
 
   @Column()
-  doctorId: string;
+  doctorId: number;
 
   @Column({ type: 'timestamp' })
   appointmentDate: Date;

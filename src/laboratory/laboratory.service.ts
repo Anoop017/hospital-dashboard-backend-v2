@@ -59,7 +59,7 @@ export class LaboratoryService {
     return new PageDto(tests, pageMetaDto);
   }
 
-  async findMy(userId: string, queryDto?: QueryLabTestDto): Promise<PageDto<LabTest>> {
+  async findMy(userId: number, queryDto?: QueryLabTestDto): Promise<PageDto<LabTest>> {
     const qb = this.labTestsRepository
       .createQueryBuilder('test')
       .leftJoinAndSelect('test.patient', 'patient')
@@ -88,7 +88,7 @@ export class LaboratoryService {
     return new PageDto(tests, pageMetaDto);
   }
 
-  async findOne(id: string, userId?: string, roles: string[] = []): Promise<LabTest> {
+  async findOne(id: number, userId?: number, roles: string[] = []): Promise<LabTest> {
     const labTest = await this.labTestsRepository.findOne({
       where: { id },
       relations: { patient: { user: true }, doctor: { user: true } },
@@ -108,13 +108,13 @@ export class LaboratoryService {
     return labTest;
   }
 
-  async update(id: string, updateLabTestDto: UpdateLabTestDto): Promise<LabTest> {
+  async update(id: number, updateLabTestDto: UpdateLabTestDto): Promise<LabTest> {
     const labTest = await this.findOne(id);
     Object.assign(labTest, updateLabTestDto);
     return this.labTestsRepository.save(labTest);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const labTest = await this.findOne(id);
     await this.labTestsRepository.softRemove(labTest);
   }

@@ -21,8 +21,8 @@ describe('MedicalRecordsService', () => {
   });
 
   it('should return records for patient', async () => {
-    mockRepo.find.mockResolvedValue([{ id: 'r1' }]);
-    const result = await service.findByPatient('p1');
-    expect(result).toEqual([{ id: 'r1' }]);
+    mockRepo.find.mockResolvedValue([{ id: 1 }]);
+    const result = await service.findByPatient(1);
+    expect(result).toEqual([{ id: 1 }]);
   });
 });

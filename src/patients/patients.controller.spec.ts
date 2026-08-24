@@ -7,10 +7,10 @@ describe('PatientsController', () => {
   let service: PatientsService;
 
   const mockService = {
-    create: jest.fn().mockResolvedValue({ id: '1' }),
+    create: jest.fn().mockResolvedValue({ id: 1 }),
     findAll: jest.fn().mockResolvedValue([]),
-    findOne: jest.fn().mockResolvedValue({ id: '1' }),
-    update: jest.fn().mockResolvedValue({ id: '1' }),
+    findOne: jest.fn().mockResolvedValue({ id: 1 }),
+    update: jest.fn().mockResolvedValue({ id: 1 }),
     remove: jest.fn().mockResolvedValue(undefined),
   };
 
@@ -29,8 +29,8 @@ describe('PatientsController', () => {
   });
 
   it('should create patient', async () => {
-    const result = await controller.create({ userId: 'user1' });
-    expect(result).toEqual({ id: '1' });
-    expect(service.create).toHaveBeenCalledWith({ userId: 'user1' });
+    const result = await controller.create({ userId: 1 });
+    expect(result).toEqual({ id: 1 });
+    expect(service.create).toHaveBeenCalledWith({ userId: 1 });
   });
 });

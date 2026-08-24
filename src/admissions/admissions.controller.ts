@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
 import { AdmissionsService } from './admissions.service';
 import { CreateAdmissionDto } from './dto/create-admission.dto';
 import { UpdateAdmissionDto } from './dto/update-admission.dto';
@@ -34,15 +34,15 @@ export class AdmissionsController {
   @Roles(Role.PATIENT, Role.DOCTOR)
   @ApiOperation({ summary: 'Get my admissions' })
   findMe(@Request() req: any, @Query() queryDto: QueryAdmissionDto) {
-    const userId = req.user.userId || req.user.sub;
+    const userId = Number(req.user.userId || req.user.sub);
     return this.admissionsService.findMy(userId, queryDto);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF, Role.PATIENT)
   @ApiOperation({ summary: 'Get an admission by ID' })
-  findOne(@Param('id') id: string, @Request() req: any) {
-    const userId = req.user.userId || req.user.sub;
+  findOne(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+    const userId = Number(req.user.userId || req.user.sub);
     const roles = req.user.roles || [];
     return this.admissionsService.findOne(id, userId, roles);
   }
@@ -50,14 +50,14 @@ export class AdmissionsController {
   @Patch(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
   @ApiOperation({ summary: 'Update an admission (e.g. discharge, transfer bed)' })
-  update(@Param('id') id: string, @Body() updateAdmissionDto: UpdateAdmissionDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateAdmissionDto: UpdateAdmissionDto) {
     return this.admissionsService.update(id, updateAdmissionDto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete an admission' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.admissionsService.remove(id);
   }
 }

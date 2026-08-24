@@ -1,12 +1,14 @@
-import { IsString, IsOptional, IsEnum, IsDateString, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsDateString, IsInt } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import { Gender } from '../../common/enums/gender.enum';
 import { BloodGroup } from '../../common/enums/blood-group.enum';
 
 export class CreatePatientDto {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'Linked User UUID' })
-  @IsUUID()
-  userId: string;
+  @ApiProperty({ example: 1, description: 'Linked User ID' })
+  @Type(() => Number)
+  @IsInt()
+  userId: number;
 
   @ApiProperty({ required: false, example: '1990-01-01' })
   @IsOptional()

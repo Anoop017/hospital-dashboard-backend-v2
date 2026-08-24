@@ -1,10 +1,12 @@
-import { IsString, IsUUID, IsOptional, IsIn } from 'class-validator';
+import { IsString, IsInt, IsOptional, IsIn } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreateBedDto {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'Ward UUID' })
-  @IsUUID()
-  wardId: string;
+  @ApiProperty({ example: 1, description: 'Ward ID' })
+  @Type(() => Number)
+  @IsInt()
+  wardId: number;
 
   @ApiProperty({ example: 'Bed-01' })
   @IsString()

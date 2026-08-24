@@ -27,11 +27,11 @@ describe('PharmacyService', () => {
 
   it('should fulfill prescription successfully', async () => {
     const mockPrescription = {
-      id: 'p1',
+      id: 1,
       medication: 'Paracetamol',
     };
     const mockMedicine = {
-      id: 'm1',
+      id: 1,
       name: 'Paracetamol',
       stockQuantity: 10,
     };
@@ -41,9 +41,9 @@ describe('PharmacyService', () => {
       .mockResolvedValueOnce(mockMedicine);
     MockQueryRunner.manager.save.mockImplementation((entity, data) => Promise.resolve(data));
 
-    const result = await service.fulfillPrescription('p1');
+    const result = await service.fulfillPrescription(1);
     expect(MockQueryRunner.startTransaction).toHaveBeenCalled();
     expect(MockQueryRunner.commitTransaction).toHaveBeenCalled();
-    expect(result).toHaveProperty('id', 'p1');
+    expect(result).toHaveProperty('id', 1);
   });
 });

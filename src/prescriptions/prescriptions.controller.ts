@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
 import { PrescriptionsService } from './prescriptions.service';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
@@ -34,15 +34,15 @@ export class PrescriptionsController {
   @Roles(Role.PATIENT, Role.DOCTOR)
   @ApiOperation({ summary: 'Get my prescriptions' })
   findMe(@Request() req: any, @Query() queryDto: QueryPrescriptionDto) {
-    const userId = req.user.userId || req.user.sub;
+    const userId = Number(req.user.userId || req.user.sub);
     return this.prescriptionsService.findMy(userId, queryDto);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT, Role.PHARMACIST)
   @ApiOperation({ summary: 'Get prescription by id' })
-  findOne(@Param('id') id: string, @Request() req: any) {
-    const userId = req.user.userId || req.user.sub;
+  findOne(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+    const userId = Number(req.user.userId || req.user.sub);
     const roles = req.user.roles || [];
     return this.prescriptionsService.findOne(id, userId, roles);
   }
@@ -50,14 +50,14 @@ export class PrescriptionsController {
   @Roles(Role.DOCTOR, Role.ADMIN)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a prescription' })
-  update(@Param('id') id: string, @Body() updatePrescriptionDto: UpdatePrescriptionDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updatePrescriptionDto: UpdatePrescriptionDto) {
     return this.prescriptionsService.update(id, updatePrescriptionDto);
   }
 
   @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a prescription' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.prescriptionsService.remove(id);
   }
 }

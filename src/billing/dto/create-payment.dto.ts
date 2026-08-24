@@ -1,5 +1,6 @@
-import { IsNumber, IsUUID, IsOptional, IsEnum, Min } from 'class-validator';
+import { IsNumber, IsInt, IsOptional, IsEnum, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export enum PaymentMethod {
   CASH = 'cash',
@@ -12,11 +13,12 @@ export enum PaymentMethod {
 }
 
 export class CreatePaymentDto {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'Bill ID to pay against' })
-  @IsUUID()
-  billId: string;
+  @ApiProperty({ example: 1, description: 'Bill ID to pay against' })
+  @Type(() => Number)
+  @IsInt()
+  billId: number;
 
-  @ApiProperty({ example: 100.00, description: 'Payment amount' })
+  @ApiProperty({ example: 100.0, description: 'Payment amount' })
   @IsNumber()
   @Min(0.01)
   amount: number;

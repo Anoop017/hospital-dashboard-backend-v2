@@ -32,7 +32,7 @@ export class DashboardService {
     @InjectRepository(Bill) private billRepo: Repository<Bill>,
   ) {}
 
-  async getSummary(userId: string, userRoles: any[]) {
+  async getSummary(userId: number, userRoles: any[]) {
     const roles: string[] = (userRoles || []).map((r: any) => (typeof r === 'string' ? r : r?.name)).filter(Boolean);
 
     // 1. DOCTOR ROLE

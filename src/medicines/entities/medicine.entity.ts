@@ -1,10 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
+import { Entity, Column } from 'typeorm';
+import { BaseEntity } from '../../common/entities/base.entity';
 
 @Entity('medicines')
-export class Medicine {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class Medicine extends BaseEntity {
   @Column({ unique: true })
   name: string;
 
@@ -22,13 +20,4 @@ export class Medicine {
 
   @Column({ type: 'date', nullable: true })
   expiryDate: string;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @DeleteDateColumn()
-  deletedAt: Date;
 }

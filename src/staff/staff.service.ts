@@ -44,7 +44,7 @@ export class StaffService {
     });
   }
 
-  async findOneByUserId(userId: string): Promise<Staff> {
+  async findOneByUserId(userId: number): Promise<Staff> {
     const staff = await this.staffRepository.findOne({
       where: { userId },
       relations: { user: true, department: true },
@@ -55,7 +55,7 @@ export class StaffService {
     return staff;
   }
 
-  async findOne(id: string): Promise<Staff> {
+  async findOne(id: number): Promise<Staff> {
     const staff = await this.staffRepository.findOne({
       where: { id },
       relations: {
@@ -69,13 +69,13 @@ export class StaffService {
     return staff;
   }
 
-  async update(id: string, updateStaffDto: UpdateStaffDto): Promise<Staff> {
+  async update(id: number, updateStaffDto: UpdateStaffDto): Promise<Staff> {
     const staff = await this.findOne(id);
     this.staffRepository.merge(staff, updateStaffDto);
     return this.staffRepository.save(staff);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const staff = await this.findOne(id);
     await this.staffRepository.softRemove(staff);
   }

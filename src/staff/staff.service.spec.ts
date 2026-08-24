@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Staff } from './entities/staff.entity';
 import { MockRepository } from '../common/test-utils/mock-repository';
 import { ConflictException } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
 
 describe('StaffService', () => {
   let service: StaffService;
@@ -14,6 +15,7 @@ describe('StaffService', () => {
       providers: [
         StaffService,
         { provide: getRepositoryToken(Staff), useClass: MockRepository },
+        { provide: UsersService, useValue: {} },
       ],
     }).compile();
 
@@ -22,7 +24,7 @@ describe('StaffService', () => {
   });
 
   it('should throw ConflictException if staff profile exists for user', async () => {
-    mockRepo.findOne.mockResolvedValue({ id: '1' });
-    await expect(service.create({ userId: 'u1', departmentId: 'd1', jobTitle: 'Nurse', hireDate: '2023-01-01' })).rejects.toThrow(ConflictException);
+    mockRepo.findOne.mockResolvedValue({ id: 1 });
+    await expect(service.create({ userId: 1, departmentId: 1, jobTitle: 'Nurse', hireDate: '2023-01-01' })).rejects.toThrow(ConflictException);
   });
 });

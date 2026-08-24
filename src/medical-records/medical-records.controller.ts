@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
 import { MedicalRecordsService } from './medical-records.service';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
 import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
@@ -34,22 +34,22 @@ export class MedicalRecordsController {
   @Roles(Role.PATIENT, Role.DOCTOR)
   @ApiOperation({ summary: 'Get my medical records' })
   findMe(@Request() req: any, @Query() queryDto: QueryMedicalRecordDto) {
-    const userId = req.user.userId || req.user.sub;
+    const userId = Number(req.user.userId || req.user.sub);
     return this.medicalRecordsService.findMy(userId, queryDto);
   }
 
   @Get('patient/:patientId')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT)
   @ApiOperation({ summary: 'Get all medical records for a specific patient' })
-  findByPatient(@Param('patientId') patientId: string) {
+  findByPatient(@Param('patientId', ParseIntPipe) patientId: number) {
     return this.medicalRecordsService.findByPatient(patientId);
   }
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT)
   @ApiOperation({ summary: 'Get a medical record by ID' })
-  findOne(@Param('id') id: string, @Request() req: any) {
-    const userId = req.user.userId || req.user.sub;
+  findOne(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+    const userId = Number(req.user.userId || req.user.sub);
     const roles = req.user.roles || [];
     return this.medicalRecordsService.findOne(id, userId, roles);
   }
@@ -57,14 +57,14 @@ export class MedicalRecordsController {
   @Patch(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
   @ApiOperation({ summary: 'Update a medical record' })
-  update(@Param('id') id: string, @Body() updateMedicalRecordDto: UpdateMedicalRecordDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateMedicalRecordDto: UpdateMedicalRecordDto) {
     return this.medicalRecordsService.update(id, updateMedicalRecordDto);
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete a medical record' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.medicalRecordsService.remove(id);
   }
 }

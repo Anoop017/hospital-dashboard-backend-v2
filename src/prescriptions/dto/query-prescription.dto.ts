@@ -1,15 +1,18 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsInt, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
 import { BaseQueryDto } from '../../common/pagination/base-query.dto';
 
 export class QueryPrescriptionDto extends BaseQueryDto {
-  @ApiPropertyOptional({ description: 'Filter by patient UUID' })
-  @IsUUID()
+  @ApiPropertyOptional({ description: 'Filter by patient ID' })
+  @Type(() => Number)
+  @IsInt()
   @IsOptional()
-  readonly patientId?: string;
+  readonly patientId?: number;
 
-  @ApiPropertyOptional({ description: 'Filter by doctor UUID' })
-  @IsUUID()
+  @ApiPropertyOptional({ description: 'Filter by doctor ID' })
+  @Type(() => Number)
+  @IsInt()
   @IsOptional()
-  readonly doctorId?: string;
+  readonly doctorId?: number;
 }

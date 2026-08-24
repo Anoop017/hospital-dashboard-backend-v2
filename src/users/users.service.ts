@@ -18,7 +18,7 @@ export class UsersService {
     private roleRepository: Repository<Role>,
     private configService: ConfigService,
     private dataSource: DataSource,
-  ) { }
+  ) {}
 
   async findByEmail(email: string): Promise<User | null> {
     return this.usersRepository.findOne({
@@ -26,14 +26,15 @@ export class UsersService {
       relations: { roles: { permissions: true } },
     });
   }
+
   async findByNumber(number: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { mobile: number },
-      relations: { roles: { permissions: true } }
-    })
+      relations: { roles: { permissions: true } },
+    });
   }
 
-  async findById(id: string): Promise<User> {
+  async findById(id: number): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id },
       relations: { roles: true },
@@ -49,7 +50,7 @@ export class UsersService {
       throw new ConflictException('Email is required');
     }
     if (!userData.mobile) {
-      throw new ConflictException('Mobile is required')
+      throw new ConflictException('Mobile is required');
     }
     const existing = await this.findByEmail(userData.email);
     if (existing) {
@@ -57,7 +58,7 @@ export class UsersService {
     }
     const numberExisting = await this.findByNumber(userData.mobile);
     if (numberExisting) {
-      throw new ConflictException("number already exists")
+      throw new ConflictException('number already exists');
     }
 
     const user = this.usersRepository.create(userData);
@@ -76,16 +77,15 @@ export class UsersService {
         isActive: true,
         isLocked: true,
         createdAt: true,
-      }
+      },
     };
 
     if (role) {
-      // If they explicitly ask for staff, include nurses as well. Otherwise support comma-separated roles.
       const rolesToSearch = role === 'staff' ? ['staff', 'nurse'] : role.split(',');
       queryOptions.where = {
         roles: {
-          name: In(rolesToSearch)
-        }
+          name: In(rolesToSearch),
+        },
       };
     }
 
@@ -99,15 +99,15 @@ export class UsersService {
         id: true,
         isActive: true,
         isLocked: true,
-        roles: { name: true }
-      }
+        roles: { name: true },
+      },
     });
 
     return {
       total: users.length,
-      active: users.filter(u => u.isActive).length,
-      locked: users.filter(u => u.isLocked).length,
-      admins: users.filter(u => u.roles?.some(r => r.name === 'admin' || r.name === 'super_admin')).length
+      active: users.filter((u) => u.isActive).length,
+      locked: users.filter((u) => u.isLocked).length,
+      admins: users.filter((u) => u.roles?.some((r) => r.name === 'admin' || r.name === 'super_admin')).length,
     };
   }
 
@@ -116,7 +116,7 @@ export class UsersService {
 
     const existingEmail = await this.findByEmail(userData.email);
     if (existingEmail) throw new ConflictException('Email already exists');
-    
+
     const existingMobile = await this.findByNumber(userData.mobile);
     if (existingMobile) throw new ConflictException('Mobile number already exists');
 
@@ -126,7 +126,7 @@ export class UsersService {
     let assignedRoles: Role[] = [];
     if (roles && roles.length > 0) {
       assignedRoles = await this.roleRepository.find({
-        where: { name: In(roles) }
+        where: { name: In(roles) },
       });
     }
 
@@ -141,7 +141,7 @@ export class UsersService {
     return result as User;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findById(id);
     const { roles, ...updateData } = updateUserDto;
 
@@ -160,7 +160,7 @@ export class UsersService {
     if (roles !== undefined) {
       if (roles.length > 0) {
         user.roles = await this.roleRepository.find({
-          where: { name: In(roles) }
+          where: { name: In(roles) },
         });
       } else {
         user.roles = [];
@@ -172,7 +172,7 @@ export class UsersService {
     return result as User;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const user = await this.findById(id);
     user.email = `${user.email}_deleted_${Date.now()}`;
     if (user.mobile) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseIntPipe } from '@nestjs/common';
 import { MedicinesService } from './medicines.service';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
@@ -38,21 +38,21 @@ export class MedicinesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get medicine by id' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.medicinesService.findOne(id);
   }
 
   @Roles(Role.ADMIN, Role.PHARMACIST)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a medicine' })
-  update(@Param('id') id: string, @Body() updateMedicineDto: UpdateMedicineDto) {
+  update(@Param('id', ParseIntPipe) id: number, @Body() updateMedicineDto: UpdateMedicineDto) {
     return this.medicinesService.update(id, updateMedicineDto);
   }
 
   @Roles(Role.ADMIN)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a medicine (Admin only)' })
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.medicinesService.remove(id);
   }
 }

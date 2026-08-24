@@ -23,7 +23,7 @@ export class BedsService {
     return this.bedsRepository.save(bed);
   }
 
-  async findAll(wardId?: string, status?: string): Promise<Bed[]> {
+  async findAll(wardId?: number, status?: string): Promise<Bed[]> {
     const qb = this.bedsRepository.createQueryBuilder('bed').leftJoinAndSelect('bed.ward', 'ward');
 
     if (wardId) {
@@ -37,7 +37,7 @@ export class BedsService {
     return qb.getMany();
   }
 
-  async findOne(id: string): Promise<Bed> {
+  async findOne(id: number): Promise<Bed> {
     const bed = await this.bedsRepository.findOne({
       where: { id },
       relations: { ward: true },
@@ -48,13 +48,13 @@ export class BedsService {
     return bed;
   }
 
-  async update(id: string, updateBedDto: UpdateBedDto): Promise<Bed> {
+  async update(id: number, updateBedDto: UpdateBedDto): Promise<Bed> {
     const bed = await this.findOne(id);
     this.bedsRepository.merge(bed, updateBedDto);
     return this.bedsRepository.save(bed);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const bed = await this.findOne(id);
     await this.bedsRepository.softRemove(bed);
   }
@@ -62,7 +62,7 @@ export class BedsService {
   async getAvailabilityMatrix() {
     const beds = await this.bedsRepository.find({ relations: { ward: true } });
 
-    const wardMap = new Map<string, { wardId: string; wardName: string; wardType: string; totalBeds: number; availableBeds: number; occupiedBeds: number; beds: any[] }>();
+    const wardMap = new Map<number | string, { wardId: number | string; wardName: string; wardType: string; totalBeds: number; availableBeds: number; occupiedBeds: number; beds: any[] }>();
 
     beds.forEach((bed) => {
       const wardId = bed.wardId || 'unassigned';

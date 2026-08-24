@@ -1,16 +1,19 @@
-import { IsString, IsNotEmpty, IsUUID, IsNumber, Min, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsNotEmpty, IsInt, IsOptional, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreateLabTestDto {
-  @ApiProperty({ example: 'uuid' })
-  @IsUUID()
+  @ApiProperty({ example: 1, description: 'Patient ID' })
+  @Type(() => Number)
+  @IsInt()
   @IsNotEmpty()
-  patientId: string;
+  patientId: number;
 
-  @ApiProperty({ example: 'uuid' })
-  @IsUUID()
+  @ApiProperty({ example: 1, description: 'Doctor ID' })
+  @Type(() => Number)
+  @IsInt()
   @IsNotEmpty()
-  doctorId: string;
+  doctorId: number;
 
   @ApiProperty({ example: 'Complete Blood Count' })
   @IsString()

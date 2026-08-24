@@ -72,7 +72,7 @@ export class AppointmentsService {
     return new PageDto(appointments, pageMetaDto);
   }
 
-  async findMy(userId: string, queryDto?: QueryAppointmentDto): Promise<PageDto<Appointment>> {
+  async findMy(userId: number, queryDto?: QueryAppointmentDto): Promise<PageDto<Appointment>> {
     const qb = this.appointmentsRepository
       .createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.patient', 'patient')
@@ -104,7 +104,7 @@ export class AppointmentsService {
     return new PageDto(appointments, pageMetaDto);
   }
 
-  async findOne(id: string, userId?: string, roles: string[] = []): Promise<Appointment> {
+  async findOne(id: number, userId?: number, roles: string[] = []): Promise<Appointment> {
     const appointment = await this.appointmentsRepository.findOne({
       where: { id },
       relations: {
@@ -127,24 +127,24 @@ export class AppointmentsService {
     return appointment;
   }
 
-  async update(id: string, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
+  async update(id: number, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
     const appointment = await this.findOne(id);
     this.appointmentsRepository.merge(appointment, updateAppointmentDto);
     return this.appointmentsRepository.save(appointment);
   }
 
-  async updateStatus(id: string, status: string): Promise<Appointment> {
+  async updateStatus(id: number, status: string): Promise<Appointment> {
     const appointment = await this.findOne(id);
     appointment.status = status;
     return this.appointmentsRepository.save(appointment);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const appointment = await this.findOne(id);
     await this.appointmentsRepository.softRemove(appointment);
   }
 
-  async getAvailableSlots(doctorId: string, dateStr: string) {
+  async getAvailableSlots(doctorId: number, dateStr: string) {
     const targetDate = new Date(dateStr);
     const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0);
     const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999);

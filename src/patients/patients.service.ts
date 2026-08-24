@@ -150,7 +150,7 @@ export class PatientsService {
     return new PageDto(patients.filter((p) => p.user !== null), pageMetaDto);
   }
 
-  async findOneByUserId(userId: string): Promise<Patient> {
+  async findOneByUserId(userId: number): Promise<Patient> {
     const patient = await this.patientsRepository.findOne({
       where: { userId },
       relations: {
@@ -166,7 +166,7 @@ export class PatientsService {
     return patient;
   }
 
-  async findOne(id: string, userId?: string, roles: string[] = []): Promise<Patient> {
+  async findOne(id: number, userId?: number, roles: string[] = []): Promise<Patient> {
     const patient = await this.patientsRepository.findOne({
       where: { id },
       relations: {
@@ -191,7 +191,7 @@ export class PatientsService {
     return patient;
   }
 
-  async getPatientSummary(id: string) {
+  async getPatientSummary(id: number) {
     const patient = await this.findOne(id);
 
     const appointments = await this.dataSource.getRepository('Appointment').find({
@@ -211,7 +211,7 @@ export class PatientsService {
     const prescriptions = await this.dataSource.getRepository('Prescription').find({
       where: { patientId: id },
       relations: { doctor: { user: true } },
-      order: { issueDate: 'DESC' },
+      order: { issuedDate: 'DESC' },
       take: 5,
     });
 
@@ -240,18 +240,18 @@ export class PatientsService {
     };
   }
 
-  async update(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient> {
+  async update(id: number, updatePatientDto: UpdatePatientDto): Promise<Patient> {
     const patient = await this.findOne(id);
     this.patientsRepository.merge(patient, updatePatientDto);
     return this.patientsRepository.save(patient);
   }
 
-  async bulkRemove(ids: string[]): Promise<void> {
+  async bulkRemove(ids: number[]): Promise<void> {
     if (!ids || ids.length === 0) return;
     await this.patientsRepository.softDelete(ids);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const patient = await this.findOne(id);
     await this.patientsRepository.softRemove(patient);
   }

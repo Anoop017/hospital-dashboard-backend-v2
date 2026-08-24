@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { IsEnum, IsInt, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
 import { BaseQueryDto } from '../../common/pagination/base-query.dto';
 
 export enum AppointmentStatus {
@@ -17,13 +18,15 @@ export class QueryAppointmentDto extends BaseQueryDto {
   @IsOptional()
   readonly status?: AppointmentStatus;
 
-  @ApiPropertyOptional({ description: 'Filter by doctor UUID' })
-  @IsUUID()
+  @ApiPropertyOptional({ description: 'Filter by doctor ID' })
+  @Type(() => Number)
+  @IsInt()
   @IsOptional()
-  readonly doctorId?: string;
+  readonly doctorId?: number;
 
-  @ApiPropertyOptional({ description: 'Filter by patient UUID' })
-  @IsUUID()
+  @ApiPropertyOptional({ description: 'Filter by patient ID' })
+  @Type(() => Number)
+  @IsInt()
   @IsOptional()
-  readonly patientId?: string;
+  readonly patientId?: number;
 }

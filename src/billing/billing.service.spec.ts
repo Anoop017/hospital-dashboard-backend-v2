@@ -29,11 +29,11 @@ describe('BillingService', () => {
   });
 
   it('should make payment successfully in transaction', async () => {
-    const bill = { id: 'b1', totalAmount: 100, paidAmount: 0, status: 'unpaid' };
+    const bill = { id: 1, totalAmount: 100, paidAmount: 0, status: 'unpaid' };
     MockQueryRunner.manager.findOne.mockResolvedValue(bill);
-    MockQueryRunner.manager.create.mockReturnValue({ id: 'p1', amount: 50 });
+    MockQueryRunner.manager.create.mockReturnValue({ id: 1, amount: 50 });
 
-    const result = await service.makePayment({ billId: 'b1', amount: 50, paymentMethod: PaymentMethod.CASH });
+    const result = await service.makePayment({ billId: 1, amount: 50, paymentMethod: PaymentMethod.CASH });
 
     expect(MockQueryRunner.startTransaction).toHaveBeenCalled();
     expect(MockQueryRunner.commitTransaction).toHaveBeenCalled();

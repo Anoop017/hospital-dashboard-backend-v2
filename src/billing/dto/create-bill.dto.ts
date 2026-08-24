@@ -1,22 +1,26 @@
-import { IsString, IsNumber, IsOptional, IsUUID, IsDateString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsNumber, IsOptional, IsInt, IsDateString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreateBillDto {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
-  @IsUUID()
-  patientId: string;
+  @ApiProperty({ example: 1, description: 'Patient ID' })
+  @Type(() => Number)
+  @IsInt()
+  patientId: number;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ example: 1, description: 'Admission ID' })
   @IsOptional()
-  @IsUUID()
-  admissionId?: string;
+  @Type(() => Number)
+  @IsInt()
+  admissionId?: number;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ example: 1, description: 'Appointment ID' })
   @IsOptional()
-  @IsUUID()
-  appointmentId?: string;
+  @Type(() => Number)
+  @IsInt()
+  appointmentId?: number;
 
-  @ApiProperty({ example: 500.00 })
+  @ApiProperty({ example: 500.0 })
   @IsNumber()
   totalAmount: number;
 

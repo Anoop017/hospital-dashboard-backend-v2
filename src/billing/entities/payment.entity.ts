@@ -9,7 +9,7 @@ export class Payment extends BaseEntity {
   bill: Bill;
 
   @Column()
-  billId: string;
+  billId: number;
 
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   amount: number;

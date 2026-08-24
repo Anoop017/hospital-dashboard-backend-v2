@@ -1,17 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { BaseEntity } from '../../common/entities/base.entity';
 import { Patient } from '../../patients/entities/patient.entity';
 import { Doctor } from '../../doctors/entities/doctor.entity';
 
 @Entity('prescriptions')
-export class Prescription {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Prescription extends BaseEntity {
+  @Column()
+  patientId: number;
 
   @Column()
-  patientId: string;
-
-  @Column()
-  doctorId: string;
+  doctorId: number;
 
   @Column({ type: 'text' })
   medication: string;
@@ -38,13 +36,4 @@ export class Prescription {
   @ManyToOne(() => Doctor)
   @JoinColumn({ name: 'doctorId' })
   doctor: Doctor;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @DeleteDateColumn()
-  deletedAt: Date;
 }

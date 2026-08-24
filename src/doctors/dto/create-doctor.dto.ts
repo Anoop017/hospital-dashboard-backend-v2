@@ -1,10 +1,12 @@
-import { IsString, IsNumber, IsOptional, IsUUID, Min } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNumber, IsOptional, IsInt, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreateDoctorDto {
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000', description: 'Linked User UUID' })
-  @IsUUID()
-  userId: string;
+  @ApiProperty({ example: 1, description: 'Linked User ID' })
+  @Type(() => Number)
+  @IsInt()
+  userId: number;
 
   @ApiProperty({ example: 'Cardiology' })
   @IsString()
@@ -14,13 +16,13 @@ export class CreateDoctorDto {
   @IsString()
   licenseNumber: string;
 
-  @ApiProperty({ example: 10, required: false })
+  @ApiPropertyOptional({ example: 10, required: false })
   @IsOptional()
   @IsNumber()
   @Min(0)
   experienceYears?: number;
 
-  @ApiProperty({ example: 150.00, required: false })
+  @ApiPropertyOptional({ example: 150.0, required: false })
   @IsOptional()
   @IsNumber()
   @Min(0)

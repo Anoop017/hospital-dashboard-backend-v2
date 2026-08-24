@@ -21,13 +21,13 @@ describe('LaboratoryService', () => {
   });
 
   it('should create lab test', async () => {
-    mockRepo.save.mockResolvedValue({ id: '1' });
+    mockRepo.save.mockResolvedValue({ id: 1 });
     const result = await service.create({
-      patientId: 'p1',
-      doctorId: 'd1',
+      patientId: 1,
+      doctorId: 1,
       testName: 'Blood Test',
       testType: 'Hematology',
     });
-    expect(result).toEqual({ id: '1' });
+    expect(result).toEqual({ id: 1 });
   });
 });

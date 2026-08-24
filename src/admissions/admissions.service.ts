@@ -54,7 +54,7 @@ export class AdmissionsService {
 
     if (queryDto?.search) {
       qb.andWhere(
-        '(LOWER(patientUser.firstName) LIKE LOWER(:search) OR LOWER(patientUser.lastName) LIKE LOWER(:search) OR LOWER(admission.roomNumber) LIKE LOWER(:search))',
+        '(LOWER(patientUser.firstName) LIKE LOWER(:search) OR LOWER(patientUser.lastName) LIKE LOWER(:search) OR LOWER(admission.reason) LIKE LOWER(:search))',
         { search: `%${queryDto.search}%` },
       );
     }
@@ -71,7 +71,7 @@ export class AdmissionsService {
     return new PageDto(admissions, pageMetaDto);
   }
 
-  async findMy(userId: string, queryDto?: QueryAdmissionDto): Promise<PageDto<Admission>> {
+  async findMy(userId: number, queryDto?: QueryAdmissionDto): Promise<PageDto<Admission>> {
     const qb = this.admissionsRepository
       .createQueryBuilder('admission')
       .leftJoinAndSelect('admission.patient', 'patient')
@@ -98,7 +98,7 @@ export class AdmissionsService {
     return new PageDto(admissions, pageMetaDto);
   }
 
-  async findOne(id: string, userId?: string, roles: string[] = []): Promise<Admission> {
+  async findOne(id: number, userId?: number, roles: string[] = []): Promise<Admission> {
     const admission = await this.admissionsRepository.findOne({
       where: { id },
       relations: {
@@ -122,7 +122,7 @@ export class AdmissionsService {
     return admission;
   }
 
-  async update(id: string, updateAdmissionDto: UpdateAdmissionDto): Promise<Admission> {
+  async update(id: number, updateAdmissionDto: UpdateAdmissionDto): Promise<Admission> {
     const admission = await this.findOne(id);
     const prevBedId = admission.bedId;
 
@@ -145,7 +145,7 @@ export class AdmissionsService {
     return savedAdmission;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const admission = await this.findOne(id);
     if (admission.bedId) {
       await this.bedsRepository.update(admission.bedId, { status: 'available' });

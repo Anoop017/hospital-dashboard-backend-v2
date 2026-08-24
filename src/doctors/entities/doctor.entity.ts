@@ -1,4 +1,4 @@
-import { Entity, Column, OneToOne, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../../users/entities/user.entity';
 
@@ -9,7 +9,7 @@ export class Doctor extends BaseEntity {
   user: User;
 
   @Column()
-  userId: string;
+  userId: number;
 
   @Column()
   specialization: string;

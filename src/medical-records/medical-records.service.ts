@@ -59,7 +59,7 @@ export class MedicalRecordsService {
     return new PageDto(records, pageMetaDto);
   }
 
-  async findMy(userId: string, queryDto?: QueryMedicalRecordDto): Promise<PageDto<MedicalRecord>> {
+  async findMy(userId: number, queryDto?: QueryMedicalRecordDto): Promise<PageDto<MedicalRecord>> {
     const qb = this.medicalRecordsRepository
       .createQueryBuilder('record')
       .leftJoinAndSelect('record.patient', 'patient')
@@ -87,7 +87,7 @@ export class MedicalRecordsService {
     return new PageDto(records, pageMetaDto);
   }
 
-  async findByPatient(patientId: string): Promise<MedicalRecord[]> {
+  async findByPatient(patientId: number): Promise<MedicalRecord[]> {
     return this.medicalRecordsRepository.find({
       where: { patientId },
       relations: {
@@ -98,7 +98,7 @@ export class MedicalRecordsService {
     });
   }
 
-  async findOne(id: string, userId?: string, roles: string[] = []): Promise<MedicalRecord> {
+  async findOne(id: number, userId?: number, roles: string[] = []): Promise<MedicalRecord> {
     const medicalRecord = await this.medicalRecordsRepository.findOne({
       where: { id },
       relations: {
@@ -121,13 +121,13 @@ export class MedicalRecordsService {
     return medicalRecord;
   }
 
-  async update(id: string, updateMedicalRecordDto: UpdateMedicalRecordDto): Promise<MedicalRecord> {
+  async update(id: number, updateMedicalRecordDto: UpdateMedicalRecordDto): Promise<MedicalRecord> {
     const medicalRecord = await this.findOne(id);
     this.medicalRecordsRepository.merge(medicalRecord, updateMedicalRecordDto);
     return this.medicalRecordsRepository.save(medicalRecord);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const medicalRecord = await this.findOne(id);
     await this.medicalRecordsRepository.softRemove(medicalRecord);
   }

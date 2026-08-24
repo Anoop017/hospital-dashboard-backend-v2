@@ -23,14 +23,14 @@ describe('AdmissionsService', () => {
   });
 
   it('should create an admission', async () => {
-    mockRepo.save.mockResolvedValue({ id: '1' });
+    mockRepo.save.mockResolvedValue({ id: 1 });
     const result = await service.create({
-      patientId: 'p1',
-      admittingDoctorId: 'd1',
-      bedId: 'b1',
+      patientId: 1,
+      admittingDoctorId: 1,
+      bedId: 1,
       admissionDate: new Date().toISOString(),
       reason: 'Observation',
     });
-    expect(result).toEqual({ id: '1' });
+    expect(result).toEqual({ id: 1 });
   });
 });
