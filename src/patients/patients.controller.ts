@@ -70,7 +70,7 @@ export class PatientsController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR, Role.PATIENT)
   @ApiOperation({ summary: 'Update a patient profile' })
   update(@Param('id', ParseIntPipe) id: number, @Body() updatePatientDto: UpdatePatientDto) {
     return this.patientsService.update(id, updatePatientDto);
