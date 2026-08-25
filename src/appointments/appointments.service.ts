@@ -7,17 +7,27 @@ import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { QueryAppointmentDto } from './dto/query-appointment.dto';
 import { PageDto } from '../common/pagination/page.dto';
 import { PageMetaDto } from '../common/pagination/page-meta.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { NotificationPriority, NotificationType } from '../notifications/entities/notification.entity';
 
 @Injectable()
 export class AppointmentsService {
   constructor(
     @InjectRepository(Appointment)
     private appointmentsRepository: Repository<Appointment>,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
     const appointment = this.appointmentsRepository.create(createAppointmentDto);
-    return this.appointmentsRepository.save(appointment);
+    const saved = await this.appointmentsRepository.save(appointment);
+
+    // Asynchronously dispatch notifications
+    this.sendAppointmentCreatedNotifications(saved.id).catch((err) =>
+      console.error('Failed to dispatch appointment created notification:', err),
+    );
+
+    return saved;
   }
 
   async findAll(queryDto?: QueryAppointmentDto): Promise<PageDto<Appointment>> {
@@ -129,19 +139,159 @@ export class AppointmentsService {
 
   async update(id: number, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
     const appointment = await this.findOne(id);
+    const oldStatus = appointment.status;
     this.appointmentsRepository.merge(appointment, updateAppointmentDto);
-    return this.appointmentsRepository.save(appointment);
+    const saved = await this.appointmentsRepository.save(appointment);
+
+    if (updateAppointmentDto.status && updateAppointmentDto.status !== oldStatus) {
+      this.sendAppointmentStatusUpdatedNotifications(saved.id, updateAppointmentDto.status).catch((err) =>
+        console.error('Failed to dispatch status update notification:', err),
+      );
+    }
+
+    return saved;
   }
 
   async updateStatus(id: number, status: string): Promise<Appointment> {
     const appointment = await this.findOne(id);
     appointment.status = status;
-    return this.appointmentsRepository.save(appointment);
+    const saved = await this.appointmentsRepository.save(appointment);
+
+    this.sendAppointmentStatusUpdatedNotifications(saved.id, status).catch((err) =>
+      console.error('Failed to dispatch status update notification:', err),
+    );
+
+    return saved;
   }
 
   async remove(id: number): Promise<void> {
     const appointment = await this.findOne(id);
     await this.appointmentsRepository.softRemove(appointment);
+  }
+
+  private async sendAppointmentCreatedNotifications(appointmentId: number): Promise<void> {
+    const appointment = await this.appointmentsRepository.findOne({
+      where: { id: appointmentId },
+      relations: {
+        patient: { user: true },
+        doctor: { user: true },
+      },
+    });
+
+    if (!appointment) return;
+
+    const patientName = appointment.patient?.user
+      ? `${appointment.patient.user.firstName} ${appointment.patient.user.lastName}`
+      : 'Patient';
+    const doctorName = appointment.doctor?.user
+      ? `${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`
+      : 'Doctor';
+    const appDate = new Date(appointment.appointmentDate).toLocaleString('en-US', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+
+    // Notify Doctor
+    if (appointment.doctor?.user?.id) {
+      await this.notificationsService.create({
+        userId: appointment.doctor.user.id,
+        title: 'New Appointment Booked',
+        message: `${patientName} has booked an appointment with you for ${appDate}.`,
+        type: NotificationType.APPOINTMENT,
+        priority: NotificationPriority.INFO,
+        link: '/appointments',
+        metadata: {
+          appointmentId: appointment.id,
+          patientId: appointment.patientId,
+          doctorId: appointment.doctorId,
+        },
+      });
+    }
+
+    // Notify Admins
+    await this.notificationsService.createForAdmins({
+      title: 'New Appointment Scheduled',
+      message: `Appointment #${appointment.id} booked for ${patientName} with Dr. ${doctorName} on ${appDate}.`,
+      type: NotificationType.APPOINTMENT,
+      priority: NotificationPriority.INFO,
+      link: '/appointments',
+      metadata: {
+        appointmentId: appointment.id,
+        patientId: appointment.patientId,
+        doctorId: appointment.doctorId,
+      },
+    });
+  }
+
+  private async sendAppointmentStatusUpdatedNotifications(
+    appointmentId: number,
+    newStatus: string,
+  ): Promise<void> {
+    const appointment = await this.appointmentsRepository.findOne({
+      where: { id: appointmentId },
+      relations: {
+        patient: { user: true },
+        doctor: { user: true },
+      },
+    });
+
+    if (!appointment) return;
+
+    const patientName = appointment.patient?.user
+      ? `${appointment.patient.user.firstName} ${appointment.patient.user.lastName}`
+      : 'Patient';
+    const doctorName = appointment.doctor?.user
+      ? `${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`
+      : 'Doctor';
+    const appDate = new Date(appointment.appointmentDate).toLocaleString('en-US', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+
+    // 1. Notify Patient
+    if (appointment.patient?.user?.id) {
+      await this.notificationsService.create({
+        userId: appointment.patient.user.id,
+        title: 'Appointment Status Updated',
+        message: `Your appointment with Dr. ${doctorName} on ${appDate} is now marked as "${newStatus}".`,
+        type: NotificationType.APPOINTMENT,
+        priority: newStatus === 'cancelled' ? NotificationPriority.WARNING : NotificationPriority.INFO,
+        link: '/portal/appointments',
+        metadata: {
+          appointmentId: appointment.id,
+          status: newStatus,
+        },
+      });
+    }
+
+    // 2. Notify Doctor
+    if (appointment.doctor?.user?.id) {
+      await this.notificationsService.create({
+        userId: appointment.doctor.user.id,
+        title: 'Appointment Status Changed',
+        message: `Appointment with ${patientName} on ${appDate} status was updated to "${newStatus}".`,
+        type: NotificationType.APPOINTMENT,
+        priority: NotificationPriority.INFO,
+        link: '/appointments',
+        metadata: {
+          appointmentId: appointment.id,
+          status: newStatus,
+        },
+      });
+    }
+
+    // 3. Notify Admins
+    await this.notificationsService.createForAdmins({
+      title: 'Appointment Status Changed',
+      message: `Appointment #${appointment.id} (${patientName} / Dr. ${doctorName}) is now "${newStatus}".`,
+      type: NotificationType.APPOINTMENT,
+      priority: NotificationPriority.INFO,
+      link: '/appointments',
+      metadata: {
+        appointmentId: appointment.id,
+        status: newStatus,
+      },
+    });
   }
 
   async getAvailableSlots(doctorId: number, dateStr: string) {
