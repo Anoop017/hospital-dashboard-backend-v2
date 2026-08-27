@@ -59,6 +59,34 @@ class EnvironmentVariables {
   @IsNumber()
   @IsOptional()
   BCRYPT_SALT_ROUNDS: number = 12;
+
+  @IsString()
+  @IsOptional()
+  SMTP_HOST?: string;
+
+  @IsNumber()
+  @IsOptional()
+  SMTP_PORT?: number;
+
+  @IsString()
+  @IsOptional()
+  SMTP_USER?: string;
+
+  @IsString()
+  @IsOptional()
+  SMTP_PASS?: string;
+
+  @IsString()
+  @IsOptional()
+  MAIL_FROM?: string;
+
+  @IsString()
+  @IsOptional()
+  PATIENT_PORTAL_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  ADMIN_PORTAL_URL?: string;
 }
 
 export function validate(config: Record<string, unknown>) {

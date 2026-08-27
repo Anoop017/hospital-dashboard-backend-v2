@@ -1,0 +1,29 @@
+export class CreateAuditLogDto {
+  eventId?: string;
+  userId?: string;
+  userEmail?: string;
+  userName?: string;
+  userRole?: string;
+  isAdmin?: boolean;
+  action: string;
+  module: string;
+  entityType?: string;
+  entityId?: string;
+  description?: string;
+  details?: string;
+  status?: string;
+  method?: string;
+  endpoint?: string;
+  statusCode?: number;
+  ipAddress?: string;
+  userAgent?: string;
+  browser?: string;
+  os?: string;
+  device?: string;
+  clientSummary?: string;
+  requestId?: string;
+  before?: any;
+  after?: any;
+  metadata?: any;
+  duration?: number;
+}

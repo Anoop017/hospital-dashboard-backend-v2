@@ -7,6 +7,10 @@ import * as bcrypt from 'bcrypt';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { Role } from '../roles/entities/role.entity';
+import { Patient } from '../patients/entities/patient.entity';
+import { Doctor } from '../doctors/entities/doctor.entity';
+import { Staff } from '../staff/entities/staff.entity';
+import { MailService } from '../mail/mail.service';
 import { MockRepository } from '../common/test-utils/mock-repository';
 
 jest.mock('bcrypt', () => ({
@@ -31,6 +35,10 @@ describe('AuthService', () => {
     get: jest.fn().mockReturnValue('mockValue'),
   };
 
+  const mockMailService = {
+    sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -38,8 +46,12 @@ describe('AuthService', () => {
         { provide: UsersService, useValue: mockUsersService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: MailService, useValue: mockMailService },
         { provide: getRepositoryToken(RefreshToken), useClass: MockRepository },
         { provide: getRepositoryToken(Role), useClass: MockRepository },
+        { provide: getRepositoryToken(Patient), useClass: MockRepository },
+        { provide: getRepositoryToken(Doctor), useClass: MockRepository },
+        { provide: getRepositoryToken(Staff), useClass: MockRepository },
       ],
     }).compile();
 

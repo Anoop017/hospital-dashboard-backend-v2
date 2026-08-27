@@ -28,9 +28,10 @@ import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { HealthModule } from './health/health.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
-  imports: [ConfigModule, DatabaseModule, AuthModule, UsersModule, RolesModule, PermissionsModule, PatientsModule, DoctorsModule, StaffModule, DepartmentsModule, AppointmentsModule, WardsModule, BedsModule, AdmissionsModule, MedicalRecordsModule, PrescriptionsModule, MedicinesModule, PharmacyModule, LaboratoryModule, BillingModule, PaymentsModule, InsuranceModule, NotificationsModule, AuditLogsModule, DashboardModule, HealthModule, UploadsModule],
+  imports: [ConfigModule, DatabaseModule, AuthModule, UsersModule, RolesModule, PermissionsModule, PatientsModule, DoctorsModule, StaffModule, DepartmentsModule, AppointmentsModule, WardsModule, BedsModule, AdmissionsModule, MedicalRecordsModule, PrescriptionsModule, MedicinesModule, PharmacyModule, LaboratoryModule, BillingModule, PaymentsModule, InsuranceModule, NotificationsModule, AuditLogsModule, DashboardModule, HealthModule, UploadsModule, MailModule],
   controllers: [AppController],
   providers: [AppService],
 })

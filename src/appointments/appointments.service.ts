@@ -9,6 +9,8 @@ import { PageDto } from '../common/pagination/page.dto';
 import { PageMetaDto } from '../common/pagination/page-meta.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationPriority, NotificationType } from '../notifications/entities/notification.entity';
+import { MailService } from '../mail/mail.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppointmentsService {
@@ -16,6 +18,8 @@ export class AppointmentsService {
     @InjectRepository(Appointment)
     private appointmentsRepository: Repository<Appointment>,
     private readonly notificationsService: NotificationsService,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
@@ -221,6 +225,38 @@ export class AppointmentsService {
         doctorId: appointment.doctorId,
       },
     });
+
+    // Send Email to Patient
+    if (appointment.patient?.user?.email) {
+      const portalUrl = this.configService.get<string>('mail.patientPortalUrl') || 'http://localhost:3000';
+      this.mailService
+        .sendAppointmentCreatedEmail(appointment.patient.user.email, {
+          patientName,
+          doctorName,
+          appointmentDate: appDate,
+          status: appointment.status || 'scheduled',
+          reason: appointment.reason,
+          portalUrl: `${portalUrl}/portal/appointments`,
+          appointmentId: appointment.id,
+        })
+        .catch((err) => console.error('Failed to send appointment created email to patient:', err));
+    }
+
+    // Send Email to Doctor
+    if (appointment.doctor?.user?.email) {
+      const adminUrl = this.configService.get<string>('mail.adminPortalUrl') || 'http://localhost:3001';
+      this.mailService
+        .sendAppointmentCreatedEmail(appointment.doctor.user.email, {
+          patientName,
+          doctorName,
+          appointmentDate: appDate,
+          status: appointment.status || 'scheduled',
+          reason: appointment.reason,
+          portalUrl: `${adminUrl}/appointments`,
+          appointmentId: appointment.id,
+        })
+        .catch((err) => console.error('Failed to send appointment created email to doctor:', err));
+    }
   }
 
   private async sendAppointmentStatusUpdatedNotifications(
@@ -292,6 +328,38 @@ export class AppointmentsService {
         status: newStatus,
       },
     });
+
+    // 4. Send Status Update Email to Patient
+    if (appointment.patient?.user?.email) {
+      const portalUrl = this.configService.get<string>('mail.patientPortalUrl') || 'http://localhost:3000';
+      this.mailService
+        .sendAppointmentStatusChangedEmail(appointment.patient.user.email, {
+          patientName,
+          doctorName,
+          appointmentDate: appDate,
+          status: newStatus,
+          reason: appointment.reason,
+          portalUrl: `${portalUrl}/portal/appointments`,
+          appointmentId: appointment.id,
+        })
+        .catch((err) => console.error('Failed to send status update email to patient:', err));
+    }
+
+    // 5. Send Status Update Email to Doctor
+    if (appointment.doctor?.user?.email) {
+      const adminUrl = this.configService.get<string>('mail.adminPortalUrl') || 'http://localhost:3001';
+      this.mailService
+        .sendAppointmentStatusChangedEmail(appointment.doctor.user.email, {
+          patientName,
+          doctorName,
+          appointmentDate: appDate,
+          status: newStatus,
+          reason: appointment.reason,
+          portalUrl: `${adminUrl}/appointments`,
+          appointmentId: appointment.id,
+        })
+        .catch((err) => console.error('Failed to send status update email to doctor:', err));
+    }
   }
 
   async getAvailableSlots(doctorId: number, dateStr: string) {

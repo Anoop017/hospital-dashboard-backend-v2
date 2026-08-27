@@ -12,11 +12,13 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { Patient } from '../patients/entities/patient.entity';
 import { Doctor } from '../doctors/entities/doctor.entity';
 import { Staff } from '../staff/entities/staff.entity';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     UsersModule,
     RolesModule,
+    MailModule,
     PassportModule,
     TypeOrmModule.forFeature([RefreshToken, Patient, Doctor, Staff]),
     JwtModule.registerAsync({

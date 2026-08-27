@@ -1,0 +1,42 @@
+<h2 style="margin-top:0;font-size:18px;color:#0f172a;">Appointment Status Update</h2>
+<p>Dear <strong>{{patientName}}</strong>,</p>
+<p>The status of your appointment with <strong>Dr. {{doctorName}}</strong> has been updated to:</p>
+
+<div style="text-align:center; margin: 16px 0;">
+  <span class="badge badge-{{statusClass}}" style="font-size: 15px; padding: 6px 18px;">
+    {{statusUpper}}
+  </span>
+</div>
+
+<div class="info-card">
+  <div class="info-row">
+    <span class="info-label">Doctor: </span>
+    <span class="info-value">Dr. {{doctorName}}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">Appointment Date: </span>
+    <span class="info-value">{{appointmentDate}}</span>
+  </div>
+  {{#if appointmentId}}
+  <div class="info-row">
+    <span class="info-label">Appointment ID: </span>
+    <span class="info-value">#{{appointmentId}}</span>
+  </div>
+  {{/if}}
+  {{#if reason}}
+  <div class="info-row">
+    <span class="info-label">Reason: </span>
+    <span class="info-value">{{reason}}</span>
+  </div>
+  {{/if}}
+</div>
+
+<p style="font-size:14px;color:#64748b;">
+  You can track all your appointments and health records through your online portal.
+</p>
+
+{{#if portalUrl}}
+<div style="text-align: center; margin-top: 24px;">
+  <a href="{{{portalUrl}}}" class="button" target="_blank">Go to Portal</a>
+</div>
+{{/if}}

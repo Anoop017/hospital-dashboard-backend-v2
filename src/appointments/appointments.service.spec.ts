@@ -4,6 +4,9 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Appointment } from './entities/appointment.entity';
 import { MockRepository } from '../common/test-utils/mock-repository';
 import { NotFoundException } from '@nestjs/common';
+import { NotificationsService } from '../notifications/notifications.service';
+import { MailService } from '../mail/mail.service';
+import { ConfigService } from '@nestjs/config';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -14,6 +17,9 @@ describe('AppointmentsService', () => {
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useClass: MockRepository },
+        { provide: NotificationsService, useValue: { create: jest.fn(), createForAdmins: jest.fn() } },
+        { provide: MailService, useValue: { sendAppointmentCreatedEmail: jest.fn(), sendAppointmentStatusChangedEmail: jest.fn() } },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
       ],
     }).compile();
 

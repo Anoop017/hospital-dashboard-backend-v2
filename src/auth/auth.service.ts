@@ -14,6 +14,10 @@ import { Role as RoleEnum } from '../common/enums/role.enum';
 import { Patient } from '../patients/entities/patient.entity';
 import { Doctor } from '../doctors/entities/doctor.entity';
 import { Staff } from '../staff/entities/staff.entity';
+import { MailService } from '../mail/mail.service';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +25,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private mailService: MailService,
     @InjectRepository(RefreshToken)
     private refreshTokenRepo: Repository<RefreshToken>,
     @InjectRepository(Role)
@@ -178,5 +183,74 @@ export class AuthService {
     await this.usersService.update(user.id, { passwordHash: user.passwordHash } as any);
 
     return { message: 'Password updated successfully' };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const user = await this.usersService.findByEmail(forgotPasswordDto.email.trim().toLowerCase());
+
+    // Security best practice: If user not found, don't leak information, return generic success message
+    if (!user) {
+      return { message: 'If this email address is registered, a password reset link has been sent.' };
+    }
+
+    // Generate secure random token
+    const token = crypto.randomBytes(24).toString('hex');
+    const resetCode = token.substring(0, 6).toUpperCase();
+
+    // Set 15 minutes expiration
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = expiresAt;
+    await this.usersService.save(user);
+
+    // Determine appropriate portal reset link based on roles
+    const isAdminOrStaff = user.roles?.some((r) => ['admin', 'super_admin', 'doctor', 'receptionist', 'staff'].includes(r.name));
+    const portalBaseUrl = isAdminOrStaff
+      ? (this.configService.get<string>('mail.adminPortalUrl') || 'http://localhost:3001')
+      : (this.configService.get<string>('mail.patientPortalUrl') || 'http://localhost:3000');
+
+    const resetLink = `${portalBaseUrl}/reset-password?token=${token}`;
+
+    // Send the email asynchronously without blocking the response
+    this.mailService
+      .sendPasswordResetEmail(user.email, {
+        name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'User',
+        resetLink,
+        resetCode,
+        expiresInMinutes: 15,
+      })
+      .catch((err) => console.error('Failed to send password reset email:', err));
+
+    return {
+      message: 'If this email address is registered, a password reset link has been sent.',
+    };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const token = resetPasswordDto.token.trim();
+    const user = await this.usersService.findByResetToken(token);
+
+    if (!user || !user.resetPasswordExpires) {
+      throw new BadRequestException('Invalid or expired password reset token.');
+    }
+
+    if (new Date() > new Date(user.resetPasswordExpires)) {
+      user.resetPasswordToken = null as any;
+      user.resetPasswordExpires = null as any;
+      await this.usersService.save(user);
+      throw new BadRequestException('Password reset token has expired. Please request a new one.');
+    }
+
+    const saltRounds = parseInt(this.configService.get('BCRYPT_SALT_ROUNDS') || '12', 10);
+    user.passwordHash = await bcrypt.hash(resetPasswordDto.newPassword, saltRounds);
+    user.resetPasswordToken = null as any;
+    user.resetPasswordExpires = null as any;
+
+    await this.usersService.save(user);
+
+    return {
+      message: 'Your password has been successfully reset. You can now log in with your new password.',
+    };
   }
 }

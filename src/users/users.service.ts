@@ -45,6 +45,17 @@ export class UsersService {
     return user;
   }
 
+  async findByResetToken(token: string): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: { resetPasswordToken: token },
+      relations: { roles: true },
+    });
+  }
+
+  async save(user: User): Promise<User> {
+    return this.usersRepository.save(user);
+  }
+
   async create(userData: Partial<User>): Promise<User> {
     if (!userData.email) {
       throw new ConflictException('Email is required');
