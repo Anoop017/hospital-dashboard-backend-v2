@@ -87,6 +87,22 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   ADMIN_PORTAL_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  REDIS_HOST?: string;
+
+  @IsNumber()
+  @IsOptional()
+  REDIS_PORT?: number;
+
+  @IsString()
+  @IsOptional()
+  REDIS_PASSWORD?: string;
+
+  @IsNumber()
+  @IsOptional()
+  REDIS_DB?: number;
 }
 
 export function validate(config: Record<string, unknown>) {

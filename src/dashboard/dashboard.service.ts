@@ -14,6 +14,7 @@ import { User } from '../users/entities/user.entity';
 import { Ward } from '../wards/entities/ward.entity';
 import { Bill } from '../billing/entities/bill.entity';
 import { AdmissionStatus } from '../common/enums/admission-status.enum';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class DashboardService {
@@ -30,11 +31,24 @@ export class DashboardService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Ward) private wardRepo: Repository<Ward>,
     @InjectRepository(Bill) private billRepo: Repository<Bill>,
+    private readonly redisService: RedisService,
   ) {}
 
   async getSummary(userId: number, userRoles: any[]) {
     const roles: string[] = (userRoles || []).map((r: any) => (typeof r === 'string' ? r : r?.name)).filter(Boolean);
+    const cacheKey = `dashboard:summary:${userId}:${roles.sort().join('_')}`;
 
+    const cached = await this.redisService.get<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const summary = await this.computeSummary(userId, roles);
+    await this.redisService.set(cacheKey, summary, 30); // 30s TTL
+    return summary;
+  }
+
+  private async computeSummary(userId: number, roles: string[]) {
     // 1. DOCTOR ROLE
     if (roles.includes('doctor')) {
       const doctor = await this.doctorRepo.findOne({ where: { userId }, relations: { user: true } });
@@ -325,6 +339,12 @@ export class DashboardService {
   }
 
   async getAdminAnalytics(period: 'day' | 'week' | 'month' = 'week') {
+    const cacheKey = `dashboard:analytics:${period}`;
+    const cached = await this.redisService.get<any>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const daysCount = period === 'day' ? 1 : period === 'month' ? 30 : 7;
     const labels: string[] = [];
     const appointmentsData: number[] = [];
@@ -348,7 +368,7 @@ export class DashboardService {
       admissionsData.push(admCount);
     }
 
-    return {
+    const result = {
       period,
       labels,
       datasets: [
@@ -356,6 +376,9 @@ export class DashboardService {
         { label: 'Admissions', data: admissionsData },
       ],
     };
+
+    await this.redisService.set(cacheKey, result, 60); // 60s TTL
+    return result;
   }
 
   private async getPercentageChange(repo: Repository<any>, dateField: string = 'createdAt') {

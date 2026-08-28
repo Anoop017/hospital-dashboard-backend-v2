@@ -18,6 +18,7 @@ import { MailService } from '../mail/mail.service';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import * as crypto from 'crypto';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private mailService: MailService,
+    private redisService: RedisService,
     @InjectRepository(RefreshToken)
     private refreshTokenRepo: Repository<RefreshToken>,
     @InjectRepository(Role)
@@ -204,6 +206,9 @@ export class AuthService {
     user.resetPasswordExpires = expiresAt;
     await this.usersService.save(user);
 
+    // Also store token in Redis with 15 minutes (900 seconds) auto-expiry
+    await this.redisService.set(`reset_token:${token}`, { userId: user.id, email: user.email }, 15 * 60);
+
     // Determine appropriate portal reset link based on roles
     const isAdminOrStaff = user.roles?.some((r) => ['admin', 'super_admin', 'doctor', 'receptionist', 'staff'].includes(r.name));
     const portalBaseUrl = isAdminOrStaff
@@ -229,7 +234,15 @@ export class AuthService {
 
   async resetPassword(resetPasswordDto: ResetPasswordDto) {
     const token = resetPasswordDto.token.trim();
-    const user = await this.usersService.findByResetToken(token);
+    
+    // Check Redis first for fast token validation
+    const cachedToken = await this.redisService.get<{ userId: number; email: string }>(`reset_token:${token}`);
+    let user = cachedToken ? await this.usersService.findById(cachedToken.userId) : null;
+
+    // Fallback to database lookup
+    if (!user) {
+      user = await this.usersService.findByResetToken(token);
+    }
 
     if (!user || !user.resetPasswordExpires) {
       throw new BadRequestException('Invalid or expired password reset token.');
@@ -239,6 +252,7 @@ export class AuthService {
       user.resetPasswordToken = null as any;
       user.resetPasswordExpires = null as any;
       await this.usersService.save(user);
+      await this.redisService.del(`reset_token:${token}`);
       throw new BadRequestException('Password reset token has expired. Please request a new one.');
     }
 
@@ -248,6 +262,7 @@ export class AuthService {
     user.resetPasswordExpires = null as any;
 
     await this.usersService.save(user);
+    await this.redisService.del(`reset_token:${token}`);
 
     return {
       message: 'Your password has been successfully reset. You can now log in with your new password.',

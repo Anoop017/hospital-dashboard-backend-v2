@@ -11,6 +11,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { NotificationPriority, NotificationType } from '../notifications/entities/notification.entity';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class AppointmentsService {
@@ -20,11 +21,15 @@ export class AppointmentsService {
     private readonly notificationsService: NotificationsService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
   ) {}
 
   async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
     const appointment = this.appointmentsRepository.create(createAppointmentDto);
     const saved = await this.appointmentsRepository.save(appointment);
+
+    // Invalidate dashboard cache
+    this.redisService.delByPattern('dashboard:*').catch(() => {});
 
     // Asynchronously dispatch notifications
     this.sendAppointmentCreatedNotifications(saved.id).catch((err) =>
@@ -148,6 +153,7 @@ export class AppointmentsService {
     const saved = await this.appointmentsRepository.save(appointment);
 
     if (updateAppointmentDto.status && updateAppointmentDto.status !== oldStatus) {
+      this.redisService.delByPattern('dashboard:*').catch(() => {});
       this.sendAppointmentStatusUpdatedNotifications(saved.id, updateAppointmentDto.status).catch((err) =>
         console.error('Failed to dispatch status update notification:', err),
       );
@@ -161,6 +167,8 @@ export class AppointmentsService {
     appointment.status = status;
     const saved = await this.appointmentsRepository.save(appointment);
 
+    this.redisService.delByPattern('dashboard:*').catch(() => {});
+
     this.sendAppointmentStatusUpdatedNotifications(saved.id, status).catch((err) =>
       console.error('Failed to dispatch status update notification:', err),
     );
@@ -171,6 +179,7 @@ export class AppointmentsService {
   async remove(id: number): Promise<void> {
     const appointment = await this.findOne(id);
     await this.appointmentsRepository.softRemove(appointment);
+    this.redisService.delByPattern('dashboard:*').catch(() => {});
   }
 
   private async sendAppointmentCreatedNotifications(appointmentId: number): Promise<void> {

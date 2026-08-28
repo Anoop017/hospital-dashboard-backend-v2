@@ -7,6 +7,7 @@ import { NotFoundException } from '@nestjs/common';
 import { NotificationsService } from '../notifications/notifications.service';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
+import { RedisService } from '../redis/redis.service';
 
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
@@ -20,6 +21,7 @@ describe('AppointmentsService', () => {
         { provide: NotificationsService, useValue: { create: jest.fn(), createForAdmins: jest.fn() } },
         { provide: MailService, useValue: { sendAppointmentCreatedEmail: jest.fn(), sendAppointmentStatusChangedEmail: jest.fn() } },
         { provide: ConfigService, useValue: { get: jest.fn() } },
+        { provide: RedisService, useValue: { delByPattern: jest.fn().mockResolvedValue(0) } },
       ],
     }).compile();
 
