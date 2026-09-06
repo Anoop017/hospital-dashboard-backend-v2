@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateLabTestDto } from './dto/create-lab-test.dto';
 import { UpdateLabTestDto } from './dto/update-lab-test.dto';
 import { QueryLabTestDto } from './dto/query-lab-test.dto';
@@ -29,7 +33,9 @@ export class LaboratoryService {
       .leftJoinAndSelect('doctor.user', 'doctorUser');
 
     if (queryDto?.patientId) {
-      qb.andWhere('test.patientId = :patientId', { patientId: queryDto.patientId });
+      qb.andWhere('test.patientId = :patientId', {
+        patientId: queryDto.patientId,
+      });
     }
 
     if (queryDto?.doctorId) {
@@ -54,26 +60,36 @@ export class LaboratoryService {
     qb.skip(skip).take(take);
 
     const [tests, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(tests, pageMetaDto);
   }
 
-  async findMy(userId: number, queryDto?: QueryLabTestDto): Promise<PageDto<LabTest>> {
+  async findMy(
+    userId: number,
+    queryDto?: QueryLabTestDto,
+  ): Promise<PageDto<LabTest>> {
     const qb = this.labTestsRepository
       .createQueryBuilder('test')
       .leftJoinAndSelect('test.patient', 'patient')
       .leftJoinAndSelect('patient.user', 'patientUser')
       .leftJoinAndSelect('test.doctor', 'doctor')
       .leftJoinAndSelect('doctor.user', 'doctorUser')
-      .where('(patient.userId = :userId OR doctor.userId = :userId)', { userId });
+      .where('(patient.userId = :userId OR doctor.userId = :userId)', {
+        userId,
+      });
 
     if (queryDto?.status) {
       qb.andWhere('test.status = :status', { status: queryDto.status });
     }
 
     if (queryDto?.search) {
-      qb.andWhere('(LOWER(test.testName) LIKE LOWER(:search))', { search: `%${queryDto.search}%` });
+      qb.andWhere('(LOWER(test.testName) LIKE LOWER(:search))', {
+        search: `%${queryDto.search}%`,
+      });
     }
 
     qb.orderBy('test.createdAt', 'DESC');
@@ -83,12 +99,19 @@ export class LaboratoryService {
     qb.skip(skip).take(take);
 
     const [tests, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(tests, pageMetaDto);
   }
 
-  async findOne(id: number, userId?: number, roles: string[] = []): Promise<LabTest> {
+  async findOne(
+    id: number,
+    userId?: number,
+    roles: string[] = [],
+  ): Promise<LabTest> {
     const labTest = await this.labTestsRepository.findOne({
       where: { id },
       relations: { patient: { user: true }, doctor: { user: true } },
@@ -99,16 +122,27 @@ export class LaboratoryService {
     }
 
     // Role-based ownership check
-    if (roles.includes('patient') && !roles.includes('admin') && !roles.includes('doctor') && !roles.includes('lab_technician') && !roles.includes('nurse')) {
+    if (
+      roles.includes('patient') &&
+      !roles.includes('admin') &&
+      !roles.includes('doctor') &&
+      !roles.includes('lab_technician') &&
+      !roles.includes('nurse')
+    ) {
       if (labTest.patient?.userId !== userId) {
-        throw new ForbiddenException('You are not authorized to view this lab test');
+        throw new ForbiddenException(
+          'You are not authorized to view this lab test',
+        );
       }
     }
 
     return labTest;
   }
 
-  async update(id: number, updateLabTestDto: UpdateLabTestDto): Promise<LabTest> {
+  async update(
+    id: number,
+    updateLabTestDto: UpdateLabTestDto,
+  ): Promise<LabTest> {
     const labTest = await this.findOne(id);
     Object.assign(labTest, updateLabTestDto);
     return this.labTestsRepository.save(labTest);
@@ -121,9 +155,15 @@ export class LaboratoryService {
 
   async getLabStats() {
     const total = await this.labTestsRepository.count();
-    const pending = await this.labTestsRepository.count({ where: { status: 'pending' } });
-    const completed = await this.labTestsRepository.count({ where: { status: 'completed' } });
-    const cancelled = await this.labTestsRepository.count({ where: { status: 'cancelled' } });
+    const pending = await this.labTestsRepository.count({
+      where: { status: 'pending' },
+    });
+    const completed = await this.labTestsRepository.count({
+      where: { status: 'completed' },
+    });
+    const cancelled = await this.labTestsRepository.count({
+      where: { status: 'cancelled' },
+    });
 
     return {
       total,

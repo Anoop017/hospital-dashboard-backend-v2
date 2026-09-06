@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { CreateStaffDto } from './dto/create-staff.dto';
 import { CreateStaffWithUserDto } from './dto/create-staff-with-user.dto';
@@ -25,7 +36,9 @@ export class StaffController {
 
   @Post('with-user')
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Create a new staff profile along with a new user account' })
+  @ApiOperation({
+    summary: 'Create a new staff profile along with a new user account',
+  })
   createWithUser(@Body() createStaffWithUserDto: CreateStaffWithUserDto) {
     return this.staffService.createWithUser(createStaffWithUserDto);
   }
@@ -38,7 +51,13 @@ export class StaffController {
   }
 
   @Get('me')
-  @Roles(Role.STAFF, Role.NURSE, Role.RECEPTIONIST, Role.LAB_TECHNICIAN, Role.PHARMACIST)
+  @Roles(
+    Role.STAFF,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.LAB_TECHNICIAN,
+    Role.PHARMACIST,
+  )
   @ApiOperation({ summary: 'Get current staff profile' })
   findMe(@Request() req: any) {
     const userId = Number(req.user.userId || req.user.sub);
@@ -55,7 +74,10 @@ export class StaffController {
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update a staff member profile' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateStaffDto: UpdateStaffDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateStaffDto: UpdateStaffDto,
+  ) {
     return this.staffService.update(id, updateStaffDto);
   }
 

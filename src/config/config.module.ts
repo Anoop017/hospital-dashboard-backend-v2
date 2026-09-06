@@ -12,7 +12,14 @@ import { validate } from './env.validation';
   imports: [
     NestConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, mongodbConfig, jwtConfig, mailConfig, redisConfig],
+      load: [
+        appConfig,
+        databaseConfig,
+        mongodbConfig,
+        jwtConfig,
+        mailConfig,
+        redisConfig,
+      ],
       validate,
     }),
   ],

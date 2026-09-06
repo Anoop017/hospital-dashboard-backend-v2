@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsNumber, IsDateString, IsOptional, Min } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsDateString,
+  IsOptional,
+  Min,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateMedicineDto {
@@ -17,7 +24,7 @@ export class CreateMedicineDto {
   @IsNotEmpty()
   category: string;
 
-  @ApiProperty({ example: 5.50 })
+  @ApiProperty({ example: 5.5 })
   @IsNumber()
   @Min(0)
   price: number;

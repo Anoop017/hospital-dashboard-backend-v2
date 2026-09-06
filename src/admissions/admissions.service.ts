@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Admission } from './entities/admission.entity';
@@ -24,7 +28,9 @@ export class AdmissionsService {
 
     // Auto mark bed as occupied if bedId is provided
     if (createAdmissionDto.bedId) {
-      await this.bedsRepository.update(createAdmissionDto.bedId, { status: 'occupied' });
+      await this.bedsRepository.update(createAdmissionDto.bedId, {
+        status: 'occupied',
+      });
     }
 
     return savedAdmission;
@@ -41,7 +47,9 @@ export class AdmissionsService {
       .leftJoinAndSelect('bed.ward', 'ward');
 
     if (queryDto?.patientId) {
-      qb.andWhere('admission.patientId = :patientId', { patientId: queryDto.patientId });
+      qb.andWhere('admission.patientId = :patientId', {
+        patientId: queryDto.patientId,
+      });
     }
 
     if (queryDto?.status) {
@@ -66,12 +74,18 @@ export class AdmissionsService {
     qb.skip(skip).take(take);
 
     const [admissions, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(admissions, pageMetaDto);
   }
 
-  async findMy(userId: number, queryDto?: QueryAdmissionDto): Promise<PageDto<Admission>> {
+  async findMy(
+    userId: number,
+    queryDto?: QueryAdmissionDto,
+  ): Promise<PageDto<Admission>> {
     const qb = this.admissionsRepository
       .createQueryBuilder('admission')
       .leftJoinAndSelect('admission.patient', 'patient')
@@ -80,7 +94,9 @@ export class AdmissionsService {
       .leftJoinAndSelect('admittingDoctor.user', 'doctorUser')
       .leftJoinAndSelect('admission.bed', 'bed')
       .leftJoinAndSelect('bed.ward', 'ward')
-      .where('(patient.userId = :userId OR admittingDoctor.userId = :userId)', { userId });
+      .where('(patient.userId = :userId OR admittingDoctor.userId = :userId)', {
+        userId,
+      });
 
     if (queryDto?.status) {
       qb.andWhere('admission.status = :status', { status: queryDto.status });
@@ -93,12 +109,19 @@ export class AdmissionsService {
     qb.skip(skip).take(take);
 
     const [admissions, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(admissions, pageMetaDto);
   }
 
-  async findOne(id: number, userId?: number, roles: string[] = []): Promise<Admission> {
+  async findOne(
+    id: number,
+    userId?: number,
+    roles: string[] = [],
+  ): Promise<Admission> {
     const admission = await this.admissionsRepository.findOne({
       where: { id },
       relations: {
@@ -113,16 +136,27 @@ export class AdmissionsService {
     }
 
     // Role-based ownership check
-    if (roles.includes('patient') && !roles.includes('admin') && !roles.includes('doctor') && !roles.includes('nurse') && !roles.includes('receptionist')) {
+    if (
+      roles.includes('patient') &&
+      !roles.includes('admin') &&
+      !roles.includes('doctor') &&
+      !roles.includes('nurse') &&
+      !roles.includes('receptionist')
+    ) {
       if (admission.patient?.userId !== userId) {
-        throw new ForbiddenException('You are not authorized to view this admission');
+        throw new ForbiddenException(
+          'You are not authorized to view this admission',
+        );
       }
     }
 
     return admission;
   }
 
-  async update(id: number, updateAdmissionDto: UpdateAdmissionDto): Promise<Admission> {
+  async update(
+    id: number,
+    updateAdmissionDto: UpdateAdmissionDto,
+  ): Promise<Admission> {
     const admission = await this.findOne(id);
     const prevBedId = admission.bedId;
 
@@ -130,16 +164,26 @@ export class AdmissionsService {
     const savedAdmission = await this.admissionsRepository.save(admission);
 
     // If status changed to discharged or dischargeDate set, free up the bed
-    if (updateAdmissionDto.status === 'discharged' || updateAdmissionDto.dischargeDate) {
+    if (
+      updateAdmissionDto.status === 'discharged' ||
+      updateAdmissionDto.dischargeDate
+    ) {
       if (savedAdmission.bedId) {
-        await this.bedsRepository.update(savedAdmission.bedId, { status: 'available' });
+        await this.bedsRepository.update(savedAdmission.bedId, {
+          status: 'available',
+        });
       }
-    } else if (updateAdmissionDto.bedId && updateAdmissionDto.bedId !== prevBedId) {
+    } else if (
+      updateAdmissionDto.bedId &&
+      updateAdmissionDto.bedId !== prevBedId
+    ) {
       // If bed changed, free old bed and occupy new bed
       if (prevBedId) {
         await this.bedsRepository.update(prevBedId, { status: 'available' });
       }
-      await this.bedsRepository.update(updateAdmissionDto.bedId, { status: 'occupied' });
+      await this.bedsRepository.update(updateAdmissionDto.bedId, {
+        status: 'occupied',
+      });
     }
 
     return savedAdmission;
@@ -148,7 +192,9 @@ export class AdmissionsService {
   async remove(id: number): Promise<void> {
     const admission = await this.findOne(id);
     if (admission.bedId) {
-      await this.bedsRepository.update(admission.bedId, { status: 'available' });
+      await this.bedsRepository.update(admission.bedId, {
+        status: 'available',
+      });
     }
     await this.admissionsRepository.softRemove(admission);
   }

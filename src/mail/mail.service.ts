@@ -24,11 +24,17 @@ export class MailService implements OnModuleInit {
   private readonly isConfigured: boolean;
 
   constructor(private readonly configService: ConfigService) {
-    const host = this.configService.get<string>('mail.host') || process.env.SMTP_HOST;
-    const port = this.configService.get<number>('mail.port') || parseInt(process.env.SMTP_PORT || '465', 10);
-    const secure = this.configService.get<boolean>('mail.secure') ?? (port === 465);
-    const user = this.configService.get<string>('mail.user') || process.env.SMTP_USER;
-    const pass = this.configService.get<string>('mail.pass') || process.env.SMTP_PASS;
+    const host =
+      this.configService.get<string>('mail.host') || process.env.SMTP_HOST;
+    const port =
+      this.configService.get<number>('mail.port') ||
+      parseInt(process.env.SMTP_PORT || '465', 10);
+    const secure =
+      this.configService.get<boolean>('mail.secure') ?? port === 465;
+    const user =
+      this.configService.get<string>('mail.user') || process.env.SMTP_USER;
+    const pass =
+      this.configService.get<string>('mail.pass') || process.env.SMTP_PASS;
     this.defaultFrom =
       this.configService.get<string>('mail.from') ||
       process.env.MAIL_FROM ||
@@ -49,7 +55,9 @@ export class MailService implements OnModuleInit {
       });
       this.isConfigured = true;
     } else {
-      this.logger.warn('SMTP credentials not provided. Mail service will log emails to console in development mode.');
+      this.logger.warn(
+        'SMTP credentials not provided. Mail service will log emails to console in development mode.',
+      );
       this.isConfigured = false;
     }
   }
@@ -58,9 +66,14 @@ export class MailService implements OnModuleInit {
     if (this.isConfigured && this.transporter) {
       try {
         await this.transporter.verify();
-        this.logger.log('✅ SMTP Transporter connected successfully and ready to deliver emails.');
+        this.logger.log(
+          '✅ SMTP Transporter connected successfully and ready to deliver emails.',
+        );
       } catch (error) {
-        this.logger.error('❌ Failed to verify SMTP Transporter connection:', error);
+        this.logger.error(
+          '❌ Failed to verify SMTP Transporter connection:',
+          error,
+        );
       }
     }
   }
@@ -68,8 +81,12 @@ export class MailService implements OnModuleInit {
   /**
    * Generic send email method
    */
-  async sendMail(options: SendMailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
-    const recipients = Array.isArray(options.to) ? options.to.join(', ') : options.to;
+  async sendMail(
+    options: SendMailOptions,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const recipients = Array.isArray(options.to)
+      ? options.to.join(', ')
+      : options.to;
 
     if (!recipients) {
       this.logger.warn('Email send skipped: No recipient specified.');
@@ -77,7 +94,9 @@ export class MailService implements OnModuleInit {
     }
 
     if (!this.transporter || !this.isConfigured) {
-      this.logger.log(`[SIMULATED EMAIL] To: ${recipients} | Subject: ${options.subject}`);
+      this.logger.log(
+        `[SIMULATED EMAIL] To: ${recipients} | Subject: ${options.subject}`,
+      );
       return { success: true, messageId: 'simulated-local-id' };
     }
 
@@ -90,10 +109,15 @@ export class MailService implements OnModuleInit {
         text: options.text,
       });
 
-      this.logger.log(`📧 Email delivered to [${recipients}] with Subject: "${options.subject}" (MsgID: ${info.messageId})`);
+      this.logger.log(
+        `📧 Email delivered to [${recipients}] with Subject: "${options.subject}" (MsgID: ${info.messageId})`,
+      );
       return { success: true, messageId: info.messageId };
     } catch (error: any) {
-      this.logger.error(`❌ Failed to send email to [${recipients}]: ${error.message}`, error.stack);
+      this.logger.error(
+        `❌ Failed to send email to [${recipients}]: ${error.message}`,
+        error.stack,
+      );
       return { success: false, error: error.message };
     }
   }
@@ -101,7 +125,10 @@ export class MailService implements OnModuleInit {
   /**
    * Send appointment scheduled / created email
    */
-  async sendAppointmentCreatedEmail(to: string, data: AppointmentEmailData): Promise<void> {
+  async sendAppointmentCreatedEmail(
+    to: string,
+    data: AppointmentEmailData,
+  ): Promise<void> {
     const html = getAppointmentCreatedTemplate(data);
     await this.sendMail({
       to,
@@ -113,7 +140,10 @@ export class MailService implements OnModuleInit {
   /**
    * Send appointment status change notification
    */
-  async sendAppointmentStatusChangedEmail(to: string, data: AppointmentEmailData): Promise<void> {
+  async sendAppointmentStatusChangedEmail(
+    to: string,
+    data: AppointmentEmailData,
+  ): Promise<void> {
     const html = getAppointmentStatusChangedTemplate(data);
     await this.sendMail({
       to,
@@ -125,7 +155,10 @@ export class MailService implements OnModuleInit {
   /**
    * Send password reset request email
    */
-  async sendPasswordResetEmail(to: string, data: PasswordResetEmailData): Promise<void> {
+  async sendPasswordResetEmail(
+    to: string,
+    data: PasswordResetEmailData,
+  ): Promise<void> {
     const html = getPasswordResetTemplate(data);
     await this.sendMail({
       to,

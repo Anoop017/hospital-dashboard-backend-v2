@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Doctor } from './entities/doctor.entity';
@@ -31,7 +35,9 @@ export class DoctorsService {
       where: { userId: createDoctorDto.userId },
     });
     if (existingUser) {
-      throw new ConflictException('Doctor profile already exists for this user');
+      throw new ConflictException(
+        'Doctor profile already exists for this user',
+      );
     }
     const existingLicense = await this.doctorsRepository.findOne({
       where: { licenseNumber: createDoctorDto.licenseNumber },
@@ -50,7 +56,9 @@ export class DoctorsService {
       .leftJoinAndSelect('doctor.user', 'user');
 
     if (queryDto?.specialization) {
-      qb.andWhere('LOWER(doctor.specialization) LIKE LOWER(:spec)', { spec: `%${queryDto.specialization}%` });
+      qb.andWhere('LOWER(doctor.specialization) LIKE LOWER(:spec)', {
+        spec: `%${queryDto.specialization}%`,
+      });
     }
 
     if (queryDto?.search) {
@@ -67,9 +75,15 @@ export class DoctorsService {
     qb.skip(skip).take(take);
 
     const [doctors, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
-    return new PageDto(doctors.filter((d) => d.user !== null), pageMetaDto);
+    return new PageDto(
+      doctors.filter((d) => d.user !== null),
+      pageMetaDto,
+    );
   }
 
   async findOneByUserId(userId: number): Promise<Doctor> {

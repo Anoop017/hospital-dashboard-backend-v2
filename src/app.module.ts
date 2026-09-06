@@ -31,8 +31,41 @@ import { UploadsModule } from './uploads/uploads.module';
 import { MailModule } from './mail/mail.module';
 import { RedisModule } from './redis/redis.module';
 
+import { AdminsModule } from './admins/admins.module';
+
 @Module({
-  imports: [ConfigModule, DatabaseModule, AuthModule, UsersModule, RolesModule, PermissionsModule, PatientsModule, DoctorsModule, StaffModule, DepartmentsModule, AppointmentsModule, WardsModule, BedsModule, AdmissionsModule, MedicalRecordsModule, PrescriptionsModule, MedicinesModule, PharmacyModule, LaboratoryModule, BillingModule, PaymentsModule, InsuranceModule, NotificationsModule, AuditLogsModule, DashboardModule, HealthModule, UploadsModule, MailModule, RedisModule],
+  imports: [
+    ConfigModule,
+    DatabaseModule,
+    AdminsModule,
+    AuthModule,
+    UsersModule,
+    RolesModule,
+    PermissionsModule,
+    PatientsModule,
+    DoctorsModule,
+    StaffModule,
+    DepartmentsModule,
+    AppointmentsModule,
+    WardsModule,
+    BedsModule,
+    AdmissionsModule,
+    MedicalRecordsModule,
+    PrescriptionsModule,
+    MedicinesModule,
+    PharmacyModule,
+    LaboratoryModule,
+    BillingModule,
+    PaymentsModule,
+    InsuranceModule,
+    NotificationsModule,
+    AuditLogsModule,
+    DashboardModule,
+    HealthModule,
+    UploadsModule,
+    MailModule,
+    RedisModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

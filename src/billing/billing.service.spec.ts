@@ -5,7 +5,10 @@ import { Bill } from './entities/bill.entity';
 import { Payment } from './entities/payment.entity';
 import { Patient } from '../patients/entities/patient.entity';
 import { PaymentMethod } from './dto/create-payment.dto';
-import { MockRepository, MockQueryRunner } from '../common/test-utils/mock-repository';
+import {
+  MockRepository,
+  MockQueryRunner,
+} from '../common/test-utils/mock-repository';
 import { DataSource } from 'typeorm';
 
 describe('BillingService', () => {
@@ -20,7 +23,9 @@ describe('BillingService', () => {
         { provide: getRepositoryToken(Patient), useClass: MockRepository },
         {
           provide: DataSource,
-          useValue: { createQueryRunner: jest.fn().mockReturnValue(MockQueryRunner) },
+          useValue: {
+            createQueryRunner: jest.fn().mockReturnValue(MockQueryRunner),
+          },
         },
       ],
     }).compile();
@@ -33,7 +38,11 @@ describe('BillingService', () => {
     MockQueryRunner.manager.findOne.mockResolvedValue(bill);
     MockQueryRunner.manager.create.mockReturnValue({ id: 1, amount: 50 });
 
-    const result = await service.makePayment({ billId: 1, amount: 50, paymentMethod: PaymentMethod.CASH });
+    const result = await service.makePayment({
+      billId: 1,
+      amount: 50,
+      paymentMethod: PaymentMethod.CASH,
+    });
 
     expect(MockQueryRunner.startTransaction).toHaveBeenCalled();
     expect(MockQueryRunner.commitTransaction).toHaveBeenCalled();

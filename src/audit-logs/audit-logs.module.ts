@@ -8,7 +8,9 @@ import { AuditLogInterceptor } from '../common/interceptors/audit-log.intercepto
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: AuditLog.name, schema: AuditLogSchema }]),
+    MongooseModule.forFeature([
+      { name: AuditLog.name, schema: AuditLogSchema },
+    ]),
   ],
   controllers: [AuditLogsController],
   providers: [

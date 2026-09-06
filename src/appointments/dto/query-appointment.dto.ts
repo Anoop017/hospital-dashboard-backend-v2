@@ -13,7 +13,10 @@ export enum AppointmentStatus {
 }
 
 export class QueryAppointmentDto extends BaseQueryDto {
-  @ApiPropertyOptional({ enum: AppointmentStatus, description: 'Filter by appointment status' })
+  @ApiPropertyOptional({
+    enum: AppointmentStatus,
+    description: 'Filter by appointment status',
+  })
   @IsEnum(AppointmentStatus)
   @IsOptional()
   readonly status?: AppointmentStatus;

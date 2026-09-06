@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { WardsService } from './wards.service';
 import { CreateWardDto } from './dto/create-ward.dto';
 import { UpdateWardDto } from './dto/update-ward.dto';
@@ -23,14 +33,28 @@ export class WardsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF, Role.PATIENT)
+  @Roles(
+    Role.ADMIN,
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.STAFF,
+    Role.PATIENT,
+  )
   @ApiOperation({ summary: 'Get all wards' })
   findAll() {
     return this.wardsService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF, Role.PATIENT)
+  @Roles(
+    Role.ADMIN,
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.STAFF,
+    Role.PATIENT,
+  )
   @ApiOperation({ summary: 'Get a ward by ID' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.wardsService.findOne(id);
@@ -39,7 +63,10 @@ export class WardsController {
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update a ward' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateWardDto: UpdateWardDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateWardDto: UpdateWardDto,
+  ) {
     return this.wardsService.update(id, updateWardDto);
   }
 

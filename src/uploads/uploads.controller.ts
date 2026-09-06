@@ -1,4 +1,15 @@
-import { Controller, Post, UseInterceptors, UploadedFile, ParseFilePipeBuilder, HttpStatus, Get, Param, Res, StreamableFile } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipeBuilder,
+  HttpStatus,
+  Get,
+  Param,
+  Res,
+  StreamableFile,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { createReadStream } from 'fs';
@@ -25,10 +36,9 @@ export class UploadsController {
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(
     @UploadedFile(
-      new ParseFilePipeBuilder()
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
+      new ParseFilePipeBuilder().build({
+        errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      }),
     )
     file: Express.Multer.File,
   ) {
@@ -42,10 +52,13 @@ export class UploadsController {
 
   @Get(':filename')
   @ApiOperation({ summary: 'Download or view an uploaded file' })
-  getFile(@Param('filename') filename: string, @Res({ passthrough: true }) res: Response): StreamableFile {
+  getFile(
+    @Param('filename') filename: string,
+    @Res({ passthrough: true }) res: Response,
+  ): StreamableFile {
     const file = createReadStream(join(process.cwd(), 'uploads', filename));
-    
-    // Set appropriate headers based on file extension can be done here, 
+
+    // Set appropriate headers based on file extension can be done here,
     // but StreamableFile handles basic streaming.
     return new StreamableFile(file);
   }

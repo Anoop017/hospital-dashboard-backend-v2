@@ -1,4 +1,10 @@
-import { IsString, IsInt, IsDateString, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsDateString,
+  IsOptional,
+  IsEnum,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { AdmissionStatus } from '../../common/enums/admission-status.enum';
@@ -27,7 +33,11 @@ export class CreateAdmissionDto {
   @IsString()
   reason: string;
 
-  @ApiProperty({ required: false, enum: AdmissionStatus, example: AdmissionStatus.ADMITTED })
+  @ApiProperty({
+    required: false,
+    enum: AdmissionStatus,
+    example: AdmissionStatus.ADMITTED,
+  })
   @IsOptional()
   @IsEnum(AdmissionStatus)
   status?: AdmissionStatus;

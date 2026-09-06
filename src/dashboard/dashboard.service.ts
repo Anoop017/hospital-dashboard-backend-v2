@@ -22,9 +22,12 @@ export class DashboardService {
     @InjectRepository(Patient) private patientRepo: Repository<Patient>,
     @InjectRepository(Doctor) private doctorRepo: Repository<Doctor>,
     @InjectRepository(Staff) private staffRepo: Repository<Staff>,
-    @InjectRepository(Appointment) private appointmentRepo: Repository<Appointment>,
-    @InjectRepository(MedicalRecord) private medicalRecordRepo: Repository<MedicalRecord>,
-    @InjectRepository(Prescription) private prescriptionRepo: Repository<Prescription>,
+    @InjectRepository(Appointment)
+    private appointmentRepo: Repository<Appointment>,
+    @InjectRepository(MedicalRecord)
+    private medicalRecordRepo: Repository<MedicalRecord>,
+    @InjectRepository(Prescription)
+    private prescriptionRepo: Repository<Prescription>,
     @InjectRepository(LabTest) private labTestRepo: Repository<LabTest>,
     @InjectRepository(Admission) private admissionRepo: Repository<Admission>,
     @InjectRepository(Bed) private bedRepo: Repository<Bed>,
@@ -35,7 +38,9 @@ export class DashboardService {
   ) {}
 
   async getSummary(userId: number, userRoles: any[]) {
-    const roles: string[] = (userRoles || []).map((r: any) => (typeof r === 'string' ? r : r?.name)).filter(Boolean);
+    const roles: string[] = (userRoles || [])
+      .map((r: any) => (typeof r === 'string' ? r : r?.name))
+      .filter(Boolean);
     const cacheKey = `dashboard:summary:${userId}:${roles.sort().join('_')}`;
 
     const cached = await this.redisService.get<any>(cacheKey);
@@ -51,7 +56,10 @@ export class DashboardService {
   private async computeSummary(userId: number, roles: string[]) {
     // 1. DOCTOR ROLE
     if (roles.includes('doctor')) {
-      const doctor = await this.doctorRepo.findOne({ where: { userId }, relations: { user: true } });
+      const doctor = await this.doctorRepo.findOne({
+        where: { userId },
+        relations: { user: true },
+      });
       if (doctor) {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
@@ -77,7 +85,9 @@ export class DashboardService {
           select: { patientId: true },
         });
 
-        const uniquePatientIds = new Set(appointments.map((a) => a.patientId).filter(Boolean));
+        const uniquePatientIds = new Set(
+          appointments.map((a) => a.patientId).filter(Boolean),
+        );
 
         const upcomingAppointments = await this.appointmentRepo.find({
           where: {
@@ -92,14 +102,18 @@ export class DashboardService {
         return {
           role: 'doctor',
           doctorId: doctor.id,
-          name: doctor.user ? `Dr. ${doctor.user.firstName} ${doctor.user.lastName}` : 'Doctor',
+          name: doctor.user
+            ? `Dr. ${doctor.user.firstName} ${doctor.user.lastName}`
+            : 'Doctor',
           specialization: doctor.specialization || 'General Medicine',
           todaysAppointments,
           pendingAppointments,
           myPatients: uniquePatientIds.size,
           upcomingAppointments: upcomingAppointments.map((a) => ({
             id: a.id,
-            patientName: a.patient?.user ? `${a.patient.user.firstName} ${a.patient.user.lastName}` : 'N/A',
+            patientName: a.patient?.user
+              ? `${a.patient.user.firstName} ${a.patient.user.lastName}`
+              : 'N/A',
             patientPhone: a.patient?.user?.mobile,
             appointmentDate: a.appointmentDate,
             status: a.status,
@@ -111,7 +125,10 @@ export class DashboardService {
 
     // 2. PATIENT ROLE
     if (roles.includes('patient')) {
-      const patient = await this.patientRepo.findOne({ where: { userId }, relations: { user: true } });
+      const patient = await this.patientRepo.findOne({
+        where: { userId },
+        relations: { user: true },
+      });
       if (patient) {
         const upcomingAppointmentsCount = await this.appointmentRepo.count({
           where: {
@@ -152,7 +169,10 @@ export class DashboardService {
 
         let totalDue = 0;
         unpaidBills.forEach((b) => {
-          totalDue += Math.max(0, Number(b.totalAmount) - Number(b.paidAmount || 0));
+          totalDue += Math.max(
+            0,
+            Number(b.totalAmount) - Number(b.paidAmount || 0),
+          );
         });
 
         // Recent lab results
@@ -171,7 +191,9 @@ export class DashboardService {
         return {
           role: 'patient',
           patientId: patient.id,
-          name: patient.user ? `${patient.user.firstName} ${patient.user.lastName}` : 'Patient',
+          name: patient.user
+            ? `${patient.user.firstName} ${patient.user.lastName}`
+            : 'Patient',
           bloodGroup: patient.bloodGroup,
           counts: {
             upcomingAppointments: upcomingAppointmentsCount,
@@ -190,7 +212,8 @@ export class DashboardService {
                 doctorName: nextAppointment.doctor?.user
                   ? `Dr. ${nextAppointment.doctor.user.firstName} ${nextAppointment.doctor.user.lastName}`
                   : 'Assigned Doctor',
-                specialization: nextAppointment.doctor?.specialization || 'General',
+                specialization:
+                  nextAppointment.doctor?.specialization || 'General',
                 appointmentDate: nextAppointment.appointmentDate,
                 reason: nextAppointment.reason,
                 status: nextAppointment.status,
@@ -226,11 +249,15 @@ export class DashboardService {
       const staffTotal = await this.staffRepo.count();
 
       const bedsTotal = await this.bedRepo.count();
-      const bedsAvailable = await this.bedRepo.count({ where: { status: 'available' } });
+      const bedsAvailable = await this.bedRepo.count({
+        where: { status: 'available' },
+      });
       const bedsOccupied = bedsTotal - bedsAvailable;
 
       // Real Bed breakdown by ward type
-      const bedsWithWards = await this.bedRepo.find({ relations: { ward: true } });
+      const bedsWithWards = await this.bedRepo.find({
+        relations: { ward: true },
+      });
       let privateBeds = 0;
       let generalBeds = 0;
       let icuBeds = 0;
@@ -278,14 +305,35 @@ export class DashboardService {
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
-        const dayEnd = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+        const dayStart = new Date(
+          d.getFullYear(),
+          d.getMonth(),
+          d.getDate(),
+          0,
+          0,
+          0,
+        );
+        const dayEnd = new Date(
+          d.getFullYear(),
+          d.getMonth(),
+          d.getDate(),
+          23,
+          59,
+          59,
+          999,
+        );
 
         const count = await this.appointmentRepo.count({
           where: { appointmentDate: Between(dayStart, dayEnd) },
         });
 
-        chartLabels.push(d.toLocaleDateString('en-US', { weekday: 'short', month: 'numeric', day: 'numeric' }));
+        chartLabels.push(
+          d.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'numeric',
+            day: 'numeric',
+          }),
+        );
         chartData.push(count);
       }
 
@@ -300,8 +348,15 @@ export class DashboardService {
             total: bedsTotal,
             available: bedsAvailable,
             occupied: bedsOccupied,
-            occupancyRate: bedsTotal > 0 ? Number(((bedsOccupied / bedsTotal) * 100).toFixed(1)) : 0,
-            breakdown: { private: privateBeds, general: generalBeds, icu: icuBeds },
+            occupancyRate:
+              bedsTotal > 0
+                ? Number(((bedsOccupied / bedsTotal) * 100).toFixed(1))
+                : 0,
+            breakdown: {
+              private: privateBeds,
+              general: generalBeds,
+              icu: icuBeds,
+            },
           },
           financials: {
             totalRevenue,
@@ -315,8 +370,12 @@ export class DashboardService {
         },
         upcomingAppointments: upcomingAppointments.map((a) => ({
           id: a.id,
-          patientName: a.patient?.user ? `${a.patient.user.firstName} ${a.patient.user.lastName}` : 'N/A',
-          doctorName: a.doctor?.user ? `Dr. ${a.doctor.user.firstName} ${a.doctor.user.lastName}` : 'N/A',
+          patientName: a.patient?.user
+            ? `${a.patient.user.firstName} ${a.patient.user.lastName}`
+            : 'N/A',
+          doctorName: a.doctor?.user
+            ? `Dr. ${a.doctor.user.firstName} ${a.doctor.user.lastName}`
+            : 'N/A',
           date: a.appointmentDate,
           status: a.status,
         })),
@@ -327,7 +386,9 @@ export class DashboardService {
     const totalPatients = await this.patientRepo.count();
     const totalDoctors = await this.doctorRepo.count();
     const totalAdmissions = await this.admissionRepo.count();
-    const availableBeds = await this.bedRepo.count({ where: { status: 'available' } });
+    const availableBeds = await this.bedRepo.count({
+      where: { status: 'available' },
+    });
 
     return {
       role: 'staff',
@@ -353,8 +414,23 @@ export class DashboardService {
     for (let i = daysCount - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
-      const dayEnd = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+      const dayStart = new Date(
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate(),
+        0,
+        0,
+        0,
+      );
+      const dayEnd = new Date(
+        d.getFullYear(),
+        d.getMonth(),
+        d.getDate(),
+        23,
+        59,
+        59,
+        999,
+      );
 
       const aptCount = await this.appointmentRepo.count({
         where: { appointmentDate: Between(dayStart, dayEnd) },
@@ -363,7 +439,9 @@ export class DashboardService {
         where: { admissionDate: Between(dayStart, dayEnd) },
       });
 
-      labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      labels.push(
+        d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      );
       appointmentsData.push(aptCount);
       admissionsData.push(admCount);
     }
@@ -381,15 +459,35 @@ export class DashboardService {
     return result;
   }
 
-  private async getPercentageChange(repo: Repository<any>, dateField: string = 'createdAt') {
+  private async getPercentageChange(
+    repo: Repository<any>,
+    dateField: string = 'createdAt',
+  ) {
     const now = new Date();
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-    const twoMonthsAgoStart = new Date(now.getFullYear(), now.getMonth() - 2, now.getDate());
+    const lastMonthStart = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate(),
+    );
+    const twoMonthsAgoStart = new Date(
+      now.getFullYear(),
+      now.getMonth() - 2,
+      now.getDate(),
+    );
 
-    const currentPeriodCount = await repo.count({ where: { [dateField]: MoreThanOrEqual(lastMonthStart) } });
-    const previousPeriodCount = await repo.count({ where: { [dateField]: Between(twoMonthsAgoStart, lastMonthStart) } });
+    const currentPeriodCount = await repo.count({
+      where: { [dateField]: MoreThanOrEqual(lastMonthStart) },
+    });
+    const previousPeriodCount = await repo.count({
+      where: { [dateField]: Between(twoMonthsAgoStart, lastMonthStart) },
+    });
 
     if (previousPeriodCount === 0) return currentPeriodCount > 0 ? 100 : 0;
-    return Number((((currentPeriodCount - previousPeriodCount) / previousPeriodCount) * 100).toFixed(1));
+    return Number(
+      (
+        ((currentPeriodCount - previousPeriodCount) / previousPeriodCount) *
+        100
+      ).toFixed(1),
+    );
   }
 }

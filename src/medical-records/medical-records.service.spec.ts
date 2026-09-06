@@ -12,7 +12,10 @@ describe('MedicalRecordsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MedicalRecordsService,
-        { provide: getRepositoryToken(MedicalRecord), useClass: MockRepository },
+        {
+          provide: getRepositoryToken(MedicalRecord),
+          useClass: MockRepository,
+        },
       ],
     }).compile();
 

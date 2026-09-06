@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { MedicalRecordsService } from './medical-records.service';
 import { CreateMedicalRecordDto } from './dto/create-medical-record.dto';
 import { UpdateMedicalRecordDto } from './dto/update-medical-record.dto';
@@ -25,7 +37,9 @@ export class MedicalRecordsController {
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
-  @ApiOperation({ summary: 'Get all medical records with pagination and search' })
+  @ApiOperation({
+    summary: 'Get all medical records with pagination and search',
+  })
   findAll(@Query() queryDto: QueryMedicalRecordDto) {
     return this.medicalRecordsService.findAll(queryDto);
   }
@@ -57,7 +71,10 @@ export class MedicalRecordsController {
   @Patch(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
   @ApiOperation({ summary: 'Update a medical record' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateMedicalRecordDto: UpdateMedicalRecordDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateMedicalRecordDto: UpdateMedicalRecordDto,
+  ) {
     return this.medicalRecordsService.update(id, updateMedicalRecordDto);
   }
 

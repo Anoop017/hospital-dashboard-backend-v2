@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsInt, IsOptional, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsInt,
+  IsOptional,
+  IsDateString,
+} from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -40,7 +46,9 @@ export class CreateLabTestDto {
   @IsOptional()
   testDate?: Date;
 
-  @ApiPropertyOptional({ example: 'https://storage.example.com/reports/123.pdf' })
+  @ApiPropertyOptional({
+    example: 'https://storage.example.com/reports/123.pdf',
+  })
   @IsString()
   @IsOptional()
   reportUrl?: string;

@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Query, Request, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  UseGuards,
+  Query,
+  Request,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { BillingService } from './billing.service';
 import { CreateBillDto } from './dto/create-bill.dto';
 import { UpdateBillDto } from './dto/update-bill.dto';
@@ -41,7 +52,9 @@ export class BillingController {
 
   @Get('bills')
   @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.STAFF)
-  @ApiOperation({ summary: 'Get all bills with pagination, search, and filters' })
+  @ApiOperation({
+    summary: 'Get all bills with pagination, search, and filters',
+  })
   findAllBills(@Query() queryDto: QueryBillDto) {
     return this.billingService.findAllBills(queryDto);
   }
@@ -67,7 +80,10 @@ export class BillingController {
   @Patch('bills/:id')
   @Roles(Role.ADMIN, Role.RECEPTIONIST)
   @ApiOperation({ summary: 'Update a bill' })
-  updateBill(@Param('id', ParseIntPipe) id: number, @Body() updateBillDto: UpdateBillDto) {
+  updateBill(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateBillDto: UpdateBillDto,
+  ) {
     return this.billingService.updateBill(id, updateBillDto);
   }
 

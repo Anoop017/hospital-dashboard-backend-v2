@@ -23,11 +23,18 @@ export class CreatePaymentDto {
   @Min(0.01)
   amount: number;
 
-  @ApiProperty({ enum: PaymentMethod, example: PaymentMethod.CREDIT_CARD, description: 'Payment method' })
+  @ApiProperty({
+    enum: PaymentMethod,
+    example: PaymentMethod.CREDIT_CARD,
+    description: 'Payment method',
+  })
   @IsEnum(PaymentMethod)
   paymentMethod: PaymentMethod;
 
-  @ApiPropertyOptional({ example: 'TXN-987654321', description: 'Transaction / reference number' })
+  @ApiPropertyOptional({
+    example: 'TXN-987654321',
+    description: 'Transaction / reference number',
+  })
   @IsOptional()
   referenceNumber?: string;
 }

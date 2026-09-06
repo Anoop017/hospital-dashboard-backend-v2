@@ -13,19 +13,24 @@ import { Patient } from '../patients/entities/patient.entity';
 import { Doctor } from '../doctors/entities/doctor.entity';
 import { Staff } from '../staff/entities/staff.entity';
 import { MailModule } from '../mail/mail.module';
+import { AdminsModule } from '../admins/admins.module';
+import { Admin } from '../admins/entities/admin.entity';
 
 @Module({
   imports: [
     UsersModule,
+    AdminsModule,
     RolesModule,
     MailModule,
     PassportModule,
-    TypeOrmModule.forFeature([RefreshToken, Patient, Doctor, Staff]),
+    TypeOrmModule.forFeature([RefreshToken, Patient, Doctor, Staff, Admin]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('jwt.accessSecret'),
-        signOptions: { expiresIn: configService.get<string>('jwt.accessExpiration') as any },
+        signOptions: {
+          expiresIn: configService.get<string>('jwt.accessExpiration') as any,
+        },
       }),
       inject: [ConfigService],
     }),

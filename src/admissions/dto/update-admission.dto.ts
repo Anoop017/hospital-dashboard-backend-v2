@@ -5,7 +5,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { AdmissionStatus } from '../../common/enums/admission-status.enum';
 
 export class UpdateAdmissionDto extends PartialType(CreateAdmissionDto) {
-  @ApiProperty({ required: false, enum: AdmissionStatus, example: AdmissionStatus.DISCHARGED })
+  @ApiProperty({
+    required: false,
+    enum: AdmissionStatus,
+    example: AdmissionStatus.DISCHARGED,
+  })
   @IsOptional()
   @IsEnum(AdmissionStatus)
   status?: AdmissionStatus;

@@ -155,9 +155,17 @@ export class AuditLogsService {
         os,
         device,
         clientSummary,
-        details: log.details || log.description || `${log.module || 'system'} ${log.action || 'action'}`,
-        status: log.status || (log.statusCode && log.statusCode < 400 ? 'SUCCESS' : 'FAILURE'),
-        isAdmin: log.isAdmin !== undefined ? log.isAdmin : (log.userRole || '').toLowerCase().includes('admin'),
+        details:
+          log.details ||
+          log.description ||
+          `${log.module || 'system'} ${log.action || 'action'}`,
+        status:
+          log.status ||
+          (log.statusCode && log.statusCode < 400 ? 'SUCCESS' : 'FAILURE'),
+        isAdmin:
+          log.isAdmin !== undefined
+            ? log.isAdmin
+            : (log.userRole || '').toLowerCase().includes('admin'),
         createdAt: log.createdAt || log.timestamp,
       };
     });
@@ -183,7 +191,10 @@ export class AuditLogsService {
       log = (await this.auditLogModel.findById(id).lean().exec()) as any;
     }
     if (!log) {
-      log = (await this.auditLogModel.findOne({ eventId: id }).lean().exec()) as any;
+      log = (await this.auditLogModel
+        .findOne({ eventId: id })
+        .lean()
+        .exec()) as any;
     }
 
     if (!log) {
@@ -218,9 +229,15 @@ export class AuditLogsService {
       this.auditLogModel.countDocuments(filter).exec(),
       this.auditLogModel.countDocuments({ ...filter, isAdmin: true }).exec(),
       this.auditLogModel.countDocuments({ ...filter, isAdmin: false }).exec(),
-      this.auditLogModel.countDocuments({ ...filter, status: 'SUCCESS' }).exec(),
-      this.auditLogModel.countDocuments({ ...filter, status: 'FAILURE' }).exec(),
-      this.auditLogModel.countDocuments({ ...filter, status: 'IN_PROGRESS' }).exec(),
+      this.auditLogModel
+        .countDocuments({ ...filter, status: 'SUCCESS' })
+        .exec(),
+      this.auditLogModel
+        .countDocuments({ ...filter, status: 'FAILURE' })
+        .exec(),
+      this.auditLogModel
+        .countDocuments({ ...filter, status: 'IN_PROGRESS' })
+        .exec(),
       this.auditLogModel.aggregate([
         { $match: filter },
         { $group: { _id: null, avgDuration: { $avg: '$duration' } } },
@@ -245,9 +262,10 @@ export class AuditLogsService {
         .exec(),
     ]);
 
-    const averageDuration = avgDurationResult.length > 0 && avgDurationResult[0].avgDuration
-      ? Math.round(avgDurationResult[0].avgDuration)
-      : 0;
+    const averageDuration =
+      avgDurationResult.length > 0 && avgDurationResult[0].avgDuration
+        ? Math.round(avgDurationResult[0].avgDuration)
+        : 0;
 
     return {
       total,
@@ -257,24 +275,31 @@ export class AuditLogsService {
       failureCount,
       inProgressCount,
       averageDuration, // in ms (for the KPI card in UI)
-      successPercentage: total > 0 ? Number(((successCount / total) * 100).toFixed(1)) : 0,
-      failurePercentage: total > 0 ? Number(((failureCount / total) * 100).toFixed(1)) : 0,
-      inProgressPercentage: total > 0 ? Number(((inProgressCount / total) * 100).toFixed(1)) : 0,
-      moduleDistribution: moduleDistribution.map((m) => ({ module: m._id, count: m.count })),
+      successPercentage:
+        total > 0 ? Number(((successCount / total) * 100).toFixed(1)) : 0,
+      failurePercentage:
+        total > 0 ? Number(((failureCount / total) * 100).toFixed(1)) : 0,
+      inProgressPercentage:
+        total > 0 ? Number(((inProgressCount / total) * 100).toFixed(1)) : 0,
+      moduleDistribution: moduleDistribution.map((m) => ({
+        module: m._id,
+        count: m.count,
+      })),
       topActions: topActions.map((a) => ({ action: a._id, count: a.count })),
       recentFailures,
     };
   }
 
   async getFilterOptions() {
-    const [modules, actions, entityTypes, roles, browsers, osList] = await Promise.all([
-      this.auditLogModel.distinct('module').exec(),
-      this.auditLogModel.distinct('action').exec(),
-      this.auditLogModel.distinct('entityType').exec(),
-      this.auditLogModel.distinct('userRole').exec(),
-      this.auditLogModel.distinct('browser').exec(),
-      this.auditLogModel.distinct('os').exec(),
-    ]);
+    const [modules, actions, entityTypes, roles, browsers, osList] =
+      await Promise.all([
+        this.auditLogModel.distinct('module').exec(),
+        this.auditLogModel.distinct('action').exec(),
+        this.auditLogModel.distinct('entityType').exec(),
+        this.auditLogModel.distinct('userRole').exec(),
+        this.auditLogModel.distinct('browser').exec(),
+        this.auditLogModel.distinct('os').exec(),
+      ]);
 
     return {
       modules: modules.filter(Boolean).sort(),
@@ -321,9 +346,17 @@ export class AuditLogsService {
         os,
         device,
         clientSummary,
-        details: log.details || log.description || `${log.module || 'system'} ${log.action || 'action'}`,
-        status: log.status || (log.statusCode && log.statusCode < 400 ? 'SUCCESS' : 'FAILURE'),
-        isAdmin: log.isAdmin !== undefined ? log.isAdmin : (log.userRole || '').toLowerCase().includes('admin'),
+        details:
+          log.details ||
+          log.description ||
+          `${log.module || 'system'} ${log.action || 'action'}`,
+        status:
+          log.status ||
+          (log.statusCode && log.statusCode < 400 ? 'SUCCESS' : 'FAILURE'),
+        isAdmin:
+          log.isAdmin !== undefined
+            ? log.isAdmin
+            : (log.userRole || '').toLowerCase().includes('admin'),
         createdAt: log.createdAt || log.timestamp,
         userName: log.userName || (log.isAdmin ? 'Administrator' : 'User'),
         userRole: log.userRole || (log.isAdmin ? 'admin' : 'staff/user'),
@@ -338,8 +371,8 @@ export class AuditLogsService {
       query.isAdmin === true
         ? 'Admin Activity Logs'
         : query.isAdmin === false
-        ? 'Staff & Patient Logs'
-        : 'All Activity Logs';
+          ? 'Staff & Patient Logs'
+          : 'All Activity Logs';
 
     const worksheet = workbook.addWorksheet(sheetName, {
       views: [{ state: 'frozen', ySplit: 1 }],
@@ -392,15 +425,22 @@ export class AuditLogsService {
 
     // Populate Data Rows
     logs.forEach((log, index) => {
-      const createdAtDate = log.createdAt ? new Date(log.createdAt) : new Date();
-      const formattedDate = createdAtDate.toISOString().replace('T', ' ').substring(0, 19);
+      const createdAtDate = log.createdAt
+        ? new Date(log.createdAt)
+        : new Date();
+      const formattedDate = createdAtDate
+        .toISOString()
+        .replace('T', ' ')
+        .substring(0, 19);
 
       const row = worksheet.addRow({
         eventId: log.eventId || '-',
         timestamp: formattedDate,
         userName: log.userName || (log.isAdmin ? 'Admin' : 'User'),
         userEmail: log.userEmail || 'system@hospital.com',
-        userRole: (log.userRole || '').toUpperCase() || (log.isAdmin ? 'ADMIN' : 'USER'),
+        userRole:
+          (log.userRole || '').toUpperCase() ||
+          (log.isAdmin ? 'ADMIN' : 'USER'),
         isAdmin: log.isAdmin ? 'YES (Admin)' : 'NO (User/Staff)',
         module: (log.module || '').toUpperCase(),
         action: log.action || '-',

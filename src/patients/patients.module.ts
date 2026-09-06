@@ -9,7 +9,15 @@ import { PatientCondition } from './entities/patient-condition.entity';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Patient, EmergencyContact, PatientAllergy, PatientCondition]), UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([
+      Patient,
+      EmergencyContact,
+      PatientAllergy,
+      PatientCondition,
+    ]),
+    UsersModule,
+  ],
   controllers: [PatientsController],
   providers: [PatientsService],
   exports: [PatientsService],

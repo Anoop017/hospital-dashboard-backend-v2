@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { PatientsService } from './patients.service';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { CreatePatientWithUserDto } from './dto/create-patient-with-user.dto';
@@ -26,7 +38,9 @@ export class PatientsController {
 
   @Post('with-user')
   @Roles(Role.ADMIN, Role.RECEPTIONIST)
-  @ApiOperation({ summary: 'Create a new patient profile along with a new user account' })
+  @ApiOperation({
+    summary: 'Create a new patient profile along with a new user account',
+  })
   createWithUser(@Body() createPatientWithUserDto: CreatePatientWithUserDto) {
     return this.patientsService.createWithUser(createPatientWithUserDto);
   }
@@ -48,14 +62,18 @@ export class PatientsController {
 
   @Get(':id/summary')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  @ApiOperation({ summary: 'Get 360-degree patient timeline & clinical summary' })
+  @ApiOperation({
+    summary: 'Get 360-degree patient timeline & clinical summary',
+  })
   getSummary(@Param('id', ParseIntPipe) id: number) {
     return this.patientsService.getPatientSummary(id);
   }
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
-  @ApiOperation({ summary: 'Get all patients with pagination, search, and filters' })
+  @ApiOperation({
+    summary: 'Get all patients with pagination, search, and filters',
+  })
   findAll(@Query() queryDto: QueryPatientDto) {
     return this.patientsService.findAll(queryDto);
   }
@@ -72,7 +90,10 @@ export class PatientsController {
   @Patch(':id')
   @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR, Role.PATIENT)
   @ApiOperation({ summary: 'Update a patient profile' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updatePatientDto: UpdatePatientDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updatePatientDto: UpdatePatientDto,
+  ) {
     return this.patientsService.update(id, updatePatientDto);
   }
 

@@ -12,7 +12,10 @@ export class Staff extends BaseEntity {
   @Column()
   userId: number;
 
-  @ManyToOne(() => Department, (department) => department.staff, { nullable: true, onDelete: 'SET NULL' })
+  @ManyToOne(() => Department, (department) => department.staff, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'departmentId' })
   department: Department;
 

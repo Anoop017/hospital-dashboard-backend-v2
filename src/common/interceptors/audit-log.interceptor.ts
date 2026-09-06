@@ -10,8 +10,14 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AuditLog, AuditLogDocument } from '../../audit-logs/schemas/audit-log.schema';
-import { AUDIT_METADATA_KEY, AuditActionOptions } from '../decorators/audit.decorator';
+import {
+  AuditLog,
+  AuditLogDocument,
+} from '../../audit-logs/schemas/audit-log.schema';
+import {
+  AUDIT_METADATA_KEY,
+  AuditActionOptions,
+} from '../decorators/audit.decorator';
 import { parseUserAgent } from '../utils/user-agent.util';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -32,9 +38,25 @@ export class AuditLogInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap({
         next: (responseData) =>
-          this.recordLog(context, request, response, startTime, true, null, responseData),
+          this.recordLog(
+            context,
+            request,
+            response,
+            startTime,
+            true,
+            null,
+            responseData,
+          ),
         error: (error) =>
-          this.recordLog(context, request, response, startTime, false, error, null),
+          this.recordLog(
+            context,
+            request,
+            response,
+            startTime,
+            false,
+            error,
+            null,
+          ),
       }),
     );
   }
@@ -50,13 +72,19 @@ export class AuditLogInterceptor implements NestInterceptor {
   ) {
     try {
       const duration = Date.now() - startTime;
-      const statusCode = isSuccess ? (response.statusCode || 200) : (error?.status || error?.statusCode || 500);
+      const statusCode = isSuccess
+        ? response.statusCode || 200
+        : error?.status || error?.statusCode || 500;
 
       // Console logging
       if (isSuccess) {
-        this.logger.log(`[${request.method}] ${request.url} - ${statusCode} - ${duration}ms`);
+        this.logger.log(
+          `[${request.method}] ${request.url} - ${statusCode} - ${duration}ms`,
+        );
       } else {
-        this.logger.warn(`[${request.method}] ${request.url} - ${statusCode} - ${duration}ms - Error: ${error?.message}`);
+        this.logger.warn(
+          `[${request.method}] ${request.url} - ${statusCode} - ${duration}ms - Error: ${error?.message}`,
+        );
       }
 
       // We log all modifying requests (POST, PUT, PATCH, DELETE), plus auth queries or sensitive exports
@@ -78,18 +106,21 @@ export class AuditLogInterceptor implements NestInterceptor {
       }
 
       // Extract user info from request or response (for login/register endpoints)
-      const user = request.user || responseData?.user || responseData?.data?.user;
-      
+      const user =
+        request.user || responseData?.user || responseData?.data?.user;
+
       let rawRoles: any[] = [];
       if (Array.isArray(user?.roles)) {
-        rawRoles = user.roles.map((r: any) => (typeof r === 'string' ? r : r?.name));
+        rawRoles = user.roles.map((r: any) =>
+          typeof r === 'string' ? r : r?.name,
+        );
       } else if (typeof user?.roles === 'string') {
         rawRoles = [user.roles];
       }
 
       const roleStr = rawRoles.join(', ').toLowerCase();
       const isUrlAdminRegister = request.url?.includes('/register-admin');
-      
+
       const isAdmin =
         isUrlAdminRegister ||
         roleStr.includes('admin') ||
@@ -100,18 +131,20 @@ export class AuditLogInterceptor implements NestInterceptor {
         user?.firstName || user?.lastName
           ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
           : request.body?.firstName || request.body?.lastName
-          ? `${request.body.firstName || ''} ${request.body.lastName || ''}`.trim()
-          : user?.email
-          ? user.email.split('@')[0]
-          : request.body?.email
-          ? request.body.email.split('@')[0]
-          : isAdmin
-          ? 'Administrator'
-          : 'System / Guest';
+            ? `${request.body.firstName || ''} ${request.body.lastName || ''}`.trim()
+            : user?.email
+              ? user.email.split('@')[0]
+              : request.body?.email
+                ? request.body.email.split('@')[0]
+                : isAdmin
+                  ? 'Administrator'
+                  : 'System / Guest';
 
-      const userEmail = user?.email || request.body?.email || 'system@hospital.com';
+      const userEmail =
+        user?.email || request.body?.email || 'system@hospital.com';
       const userId = String(user?.userId || user?.sub || user?.id || 'system');
-      const userRole = rawRoles.length > 0 ? rawRoles.join(', ') : (isAdmin ? 'admin' : 'guest');
+      const userRole =
+        rawRoles.length > 0 ? rawRoles.join(', ') : isAdmin ? 'admin' : 'guest';
 
       // Extract endpoint & handler context
       const className = context.getClass().name; // e.g. AppointmentsController
@@ -121,12 +154,22 @@ export class AuditLogInterceptor implements NestInterceptor {
         context.getHandler(),
       );
 
-      const moduleName = customMeta?.module || className.replace(/Controller$/i, '').toLowerCase();
-      const actionName = customMeta?.action || this.deriveActionName(handlerName, method, moduleName);
+      const moduleName =
+        customMeta?.module ||
+        className.replace(/Controller$/i, '').toLowerCase();
+      const actionName =
+        customMeta?.action ||
+        this.deriveActionName(handlerName, method, moduleName);
 
       // Extract entity details
-      const entityId = request.params?.id || request.body?.id || responseData?.id || responseData?.data?.id || undefined;
-      const entityType = customMeta?.entityType || this.deriveEntityType(moduleName);
+      const entityId =
+        request.params?.id ||
+        request.body?.id ||
+        responseData?.id ||
+        responseData?.data?.id ||
+        undefined;
+      const entityType =
+        customMeta?.entityType || this.deriveEntityType(moduleName);
 
       // Synthesize rich human-readable narrative details
       const details = this.synthesizeDetails({
@@ -189,8 +232,13 @@ export class AuditLogInterceptor implements NestInterceptor {
           params: sanitizedParams,
           query: sanitizedQuery,
           body: sanitizedBody,
-          error: error ? { message: error.message, stack: error.stack } : undefined,
-          responseSummary: isSuccess && responseData ? this.summarizeResponse(responseData) : undefined,
+          error: error
+            ? { message: error.message, stack: error.stack }
+            : undefined,
+          responseSummary:
+            isSuccess && responseData
+              ? this.summarizeResponse(responseData)
+              : undefined,
         },
       });
 
@@ -200,12 +248,20 @@ export class AuditLogInterceptor implements NestInterceptor {
     }
   }
 
-  private deriveActionName(handlerName: string, method: string, moduleName: string): string {
+  private deriveActionName(
+    handlerName: string,
+    method: string,
+    moduleName: string,
+  ): string {
     const cleanMod = moduleName.toUpperCase();
     const cleanHandler = handlerName.toUpperCase();
 
     if (cleanHandler.includes('LOGIN')) return 'USER_LOGIN';
-    if (cleanHandler.includes('REGISTER_ADMIN') || cleanHandler.includes('REGISTERADMIN')) return 'ADMIN_REGISTER';
+    if (
+      cleanHandler.includes('REGISTER_ADMIN') ||
+      cleanHandler.includes('REGISTERADMIN')
+    )
+      return 'ADMIN_REGISTER';
     if (cleanHandler.includes('REGISTER')) return 'USER_REGISTER';
     if (cleanHandler.includes('PASSWORD')) return 'PASSWORD_CHANGE';
     if (cleanHandler.includes('REFRESH')) return 'TOKEN_REFRESH';
@@ -214,7 +270,8 @@ export class AuditLogInterceptor implements NestInterceptor {
     if (cleanHandler.includes('DISCHARGE')) return `${cleanMod}_DISCHARGED`;
     if (cleanHandler.includes('ADMIT')) return `${cleanMod}_ADMITTED`;
     if (cleanHandler.includes('CANCEL')) return `${cleanMod}_CANCELLED`;
-    if (cleanHandler.includes('PAY') || cleanHandler.includes('PAYMENT')) return `${cleanMod}_PAYMENT_PROCESSED`;
+    if (cleanHandler.includes('PAY') || cleanHandler.includes('PAYMENT'))
+      return `${cleanMod}_PAYMENT_PROCESSED`;
 
     if (method === 'POST') return `${cleanMod}_CREATE`;
     if (method === 'PUT' || method === 'PATCH') return `${cleanMod}_UPDATE`;
@@ -244,7 +301,10 @@ export class AuditLogInterceptor implements NestInterceptor {
       notifications: 'Notification',
       'medical-records': 'MedicalRecord',
     };
-    return map[moduleName] || moduleName.charAt(0).toUpperCase() + moduleName.slice(1);
+    return (
+      map[moduleName] ||
+      moduleName.charAt(0).toUpperCase() + moduleName.slice(1)
+    );
   }
 
   private synthesizeDetails(ctx: {
@@ -265,11 +325,22 @@ export class AuditLogInterceptor implements NestInterceptor {
     entityType: string;
     entityId: any;
   }): string {
-    const { userName, userRole, isAdmin, moduleName, body, params, isSuccess, error, entityId } = ctx;
+    const {
+      userName,
+      userRole,
+      isAdmin,
+      moduleName,
+      body,
+      params,
+      isSuccess,
+      error,
+      entityId,
+    } = ctx;
     const actor = `${userName}${userRole && userRole !== 'guest' ? ` (${userRole})` : ''}`;
 
     if (!isSuccess) {
-      const reason = error?.message || error?.response?.message || 'Operation failed';
+      const reason =
+        error?.message || error?.response?.message || 'Operation failed';
       return `${actor} attempted ${ctx.actionName.replace(/_/g, ' ').toLowerCase()} on ${moduleName} but failed: ${reason}`;
     }
 
@@ -279,13 +350,19 @@ export class AuditLogInterceptor implements NestInterceptor {
         if (ctx.handlerName === 'login' || ctx.url.includes('/login')) {
           return `${actor} logged in successfully`;
         }
-        if (ctx.handlerName === 'registerAdmin' || ctx.url.includes('/register-admin')) {
+        if (
+          ctx.handlerName === 'registerAdmin' ||
+          ctx.url.includes('/register-admin')
+        ) {
           return `${actor} registered new administrator account '${body?.email || ''}'`;
         }
         if (ctx.handlerName === 'register' || ctx.url.includes('/register')) {
           return `New user account registered for '${body?.email || ''}'`;
         }
-        if (ctx.handlerName === 'changePassword' || ctx.url.includes('/change-password')) {
+        if (
+          ctx.handlerName === 'changePassword' ||
+          ctx.url.includes('/change-password')
+        ) {
           return `${actor} updated account password successfully`;
         }
         if (ctx.handlerName === 'refresh' || ctx.url.includes('/refresh')) {
@@ -299,9 +376,15 @@ export class AuditLogInterceptor implements NestInterceptor {
           return `${actor} updated status of appointment #${params.id} to '${body.status.toUpperCase()}'`;
         }
         if (ctx.method === 'POST') {
-          const docInfo = body?.doctorId ? ` with Doctor #${body.doctorId}` : '';
-          const patInfo = body?.patientId ? ` for Patient #${body.patientId}` : '';
-          const dateInfo = body?.appointmentDate ? ` on ${body.appointmentDate}` : '';
+          const docInfo = body?.doctorId
+            ? ` with Doctor #${body.doctorId}`
+            : '';
+          const patInfo = body?.patientId
+            ? ` for Patient #${body.patientId}`
+            : '';
+          const dateInfo = body?.appointmentDate
+            ? ` on ${body.appointmentDate}`
+            : '';
           return `${actor} scheduled a new appointment${docInfo}${patInfo}${dateInfo}`;
         }
         if (ctx.method === 'PATCH' || ctx.method === 'PUT') {
@@ -315,7 +398,10 @@ export class AuditLogInterceptor implements NestInterceptor {
 
       case 'doctors': {
         if (ctx.method === 'POST') {
-          const docName = body?.firstName || body?.lastName ? `${body.firstName || ''} ${body.lastName || ''}`.trim() : '';
+          const docName =
+            body?.firstName || body?.lastName
+              ? `${body.firstName || ''} ${body.lastName || ''}`.trim()
+              : '';
           const spec = body?.specialization ? ` (${body.specialization})` : '';
           return `${actor} registered doctor profile for Dr. ${docName}${spec}`;
         }
@@ -330,7 +416,10 @@ export class AuditLogInterceptor implements NestInterceptor {
 
       case 'patients': {
         if (ctx.method === 'POST') {
-          const patName = body?.firstName || body?.lastName ? `${body.firstName || ''} ${body.lastName || ''}`.trim() : '';
+          const patName =
+            body?.firstName || body?.lastName
+              ? `${body.firstName || ''} ${body.lastName || ''}`.trim()
+              : '';
           return `${actor} registered new patient record for '${patName}'`;
         }
         if (ctx.method === 'PATCH' || ctx.method === 'PUT') {
@@ -344,7 +433,9 @@ export class AuditLogInterceptor implements NestInterceptor {
 
       case 'prescriptions': {
         if (ctx.method === 'POST') {
-          const patInfo = body?.patientId ? ` for Patient #${body.patientId}` : '';
+          const patInfo = body?.patientId
+            ? ` for Patient #${body.patientId}`
+            : '';
           return `${actor} created new medical prescription${patInfo}`;
         }
         if (ctx.method === 'PATCH' || ctx.method === 'PUT') {
@@ -386,7 +477,10 @@ export class AuditLogInterceptor implements NestInterceptor {
 
       case 'staff': {
         if (ctx.method === 'POST') {
-          const staffName = body?.firstName || body?.lastName ? `${body.firstName || ''} ${body.lastName || ''}`.trim() : '';
+          const staffName =
+            body?.firstName || body?.lastName
+              ? `${body.firstName || ''} ${body.lastName || ''}`.trim()
+              : '';
           const desig = body?.designation ? ` as ${body.designation}` : '';
           return `${actor} added new staff member '${staffName}'${desig}`;
         }
@@ -400,7 +494,10 @@ export class AuditLogInterceptor implements NestInterceptor {
       }
 
       case 'admissions': {
-        if (ctx.handlerName?.toLowerCase().includes('discharge') || ctx.url.includes('/discharge')) {
+        if (
+          ctx.handlerName?.toLowerCase().includes('discharge') ||
+          ctx.url.includes('/discharge')
+        ) {
           return `${actor} discharged patient from admission #${params?.id || entityId || ''}`;
         }
         if (ctx.method === 'POST') {
@@ -438,8 +535,16 @@ export class AuditLogInterceptor implements NestInterceptor {
 
       default: {
         const actionVerb =
-          ctx.method === 'POST' ? 'created' : ctx.method === 'DELETE' ? 'deleted' : 'updated';
-        const target = entityId ? `#${entityId}` : (body?.name ? `'${body.name}'` : '');
+          ctx.method === 'POST'
+            ? 'created'
+            : ctx.method === 'DELETE'
+              ? 'deleted'
+              : 'updated';
+        const target = entityId
+          ? `#${entityId}`
+          : body?.name
+            ? `'${body.name}'`
+            : '';
         return `${actor} ${actionVerb} ${ctx.entityType || moduleName} ${target}`.trim();
       }
     }

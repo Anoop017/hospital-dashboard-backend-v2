@@ -49,12 +49,16 @@ function initTemplates() {
   if (!layoutTemplate) {
     layoutTemplate = loadTemplate('base-layout.hbs');
     appointmentCreatedTemplate = loadTemplate('appointment-created.hbs');
-    appointmentStatusChangedTemplate = loadTemplate('appointment-status-changed.hbs');
+    appointmentStatusChangedTemplate = loadTemplate(
+      'appointment-status-changed.hbs',
+    );
     passwordResetTemplate = loadTemplate('password-reset.hbs');
   }
 }
 
-export function getAppointmentCreatedTemplate(data: AppointmentEmailData): string {
+export function getAppointmentCreatedTemplate(
+  data: AppointmentEmailData,
+): string {
   initTemplates();
   const statusClass = data.status.toLowerCase().replace(/_/g, '-');
   const bodyHtml = appointmentCreatedTemplate({
@@ -70,7 +74,9 @@ export function getAppointmentCreatedTemplate(data: AppointmentEmailData): strin
   });
 }
 
-export function getAppointmentStatusChangedTemplate(data: AppointmentEmailData): string {
+export function getAppointmentStatusChangedTemplate(
+  data: AppointmentEmailData,
+): string {
   initTemplates();
   const statusClass = data.status.toLowerCase().replace(/_/g, '-');
   const statusUpper = data.status.toUpperCase();

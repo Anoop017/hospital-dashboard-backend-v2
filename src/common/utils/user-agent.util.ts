@@ -10,7 +10,12 @@ export interface ParsedUserAgent {
  * Parses a raw User-Agent header into clean, human-readable browser, OS, device, and summary values.
  */
 export function parseUserAgent(uaString?: string): ParsedUserAgent {
-  if (!uaString || uaString === 'Unknown' || typeof uaString !== 'string' || !uaString.trim()) {
+  if (
+    !uaString ||
+    uaString === 'Unknown' ||
+    typeof uaString !== 'string' ||
+    !uaString.trim()
+  ) {
     return {
       browser: 'Unknown Browser',
       os: 'Unknown OS',
@@ -111,11 +116,15 @@ export function parseUserAgent(uaString?: string): ParsedUserAgent {
 
   // 3. Detect Device
   let device = 'Desktop';
-  if (/bot|crawler|spider|slurp|facebookexternalhit|bingbot|googlebot/i.test(ua)) {
+  if (
+    /bot|crawler|spider|slurp|facebookexternalhit|bingbot|googlebot/i.test(ua)
+  ) {
     device = 'Bot';
   } else if (/ipad|tablet|(android(?!.*mobile))/i.test(ua)) {
     device = 'Tablet';
-  } else if (/mobile|iphone|ipod|blackberry|opera mini|iemobile|wpdesktop/i.test(ua)) {
+  } else if (
+    /mobile|iphone|ipod|blackberry|opera mini|iemobile|wpdesktop/i.test(ua)
+  ) {
     device = 'Mobile';
   } else if (/macintosh|windows|linux|cros/i.test(ua)) {
     device = 'Desktop';
@@ -129,7 +138,9 @@ export function parseUserAgent(uaString?: string): ParsedUserAgent {
   if (/edg\/|edge\//i.test(ua)) {
     const match = ua.match(/edg(?:e)?\/([\d.]+)/i);
     browserVersion = match ? match[1].split('.')[0] : undefined;
-    browser = browserVersion ? `Microsoft Edge ${browserVersion}` : 'Microsoft Edge';
+    browser = browserVersion
+      ? `Microsoft Edge ${browserVersion}`
+      : 'Microsoft Edge';
   } else if (/opr\/|opera/i.test(ua)) {
     const match = ua.match(/(?:opr|opera)\/([\d.]+)/i);
     browserVersion = match ? match[1].split('.')[0] : undefined;
@@ -137,7 +148,9 @@ export function parseUserAgent(uaString?: string): ParsedUserAgent {
   } else if (/samsungbrowser/i.test(ua)) {
     const match = ua.match(/samsungbrowser\/([\d.]+)/i);
     browserVersion = match ? match[1].split('.')[0] : undefined;
-    browser = browserVersion ? `Samsung Internet ${browserVersion}` : 'Samsung Internet';
+    browser = browserVersion
+      ? `Samsung Internet ${browserVersion}`
+      : 'Samsung Internet';
   } else if (/brave/i.test(ua)) {
     browser = 'Brave';
   } else if (/firefox|fxios/i.test(ua)) {
@@ -149,7 +162,9 @@ export function parseUserAgent(uaString?: string): ParsedUserAgent {
     browserVersion = match ? match[1].split('.')[0] : undefined;
     browser = browserVersion ? `Chrome ${browserVersion}` : 'Chrome';
     if (device === 'Mobile') {
-      browser = browserVersion ? `Chrome Mobile ${browserVersion}` : 'Chrome Mobile';
+      browser = browserVersion
+        ? `Chrome Mobile ${browserVersion}`
+        : 'Chrome Mobile';
     }
   } else if (/chromium/i.test(ua)) {
     const match = ua.match(/chromium\/([\d.]+)/i);
@@ -159,14 +174,18 @@ export function parseUserAgent(uaString?: string): ParsedUserAgent {
     const match = ua.match(/version\/([\d.]+)/i);
     browserVersion = match ? match[1].split('.')[0] : undefined;
     if (device === 'Mobile' || /iphone|ipod/i.test(ua)) {
-      browser = browserVersion ? `Mobile Safari ${browserVersion}` : 'Mobile Safari';
+      browser = browserVersion
+        ? `Mobile Safari ${browserVersion}`
+        : 'Mobile Safari';
     } else {
       browser = browserVersion ? `Safari ${browserVersion}` : 'Safari';
     }
   } else if (/msie|trident/i.test(ua)) {
     const match = ua.match(/(?:msie\s+|rv:)([\d.]+)/i);
     browserVersion = match ? match[1].split('.')[0] : undefined;
-    browser = browserVersion ? `Internet Explorer ${browserVersion}` : 'Internet Explorer';
+    browser = browserVersion
+      ? `Internet Explorer ${browserVersion}`
+      : 'Internet Explorer';
   } else if (ua.length > 0 && ua.length < 50) {
     // If it's already a clean string e.g. "Chrome 151" or "Firefox"
     browser = ua;

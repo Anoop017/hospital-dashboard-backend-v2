@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePrescriptionDto } from './dto/create-prescription.dto';
 import { UpdatePrescriptionDto } from './dto/update-prescription.dto';
 import { QueryPrescriptionDto } from './dto/query-prescription.dto';
@@ -15,12 +19,18 @@ export class PrescriptionsService {
     private readonly prescriptionsRepository: Repository<Prescription>,
   ) {}
 
-  async create(createPrescriptionDto: CreatePrescriptionDto): Promise<Prescription> {
-    const prescription = this.prescriptionsRepository.create(createPrescriptionDto);
+  async create(
+    createPrescriptionDto: CreatePrescriptionDto,
+  ): Promise<Prescription> {
+    const prescription = this.prescriptionsRepository.create(
+      createPrescriptionDto,
+    );
     return this.prescriptionsRepository.save(prescription);
   }
 
-  async findAll(queryDto?: QueryPrescriptionDto): Promise<PageDto<Prescription>> {
+  async findAll(
+    queryDto?: QueryPrescriptionDto,
+  ): Promise<PageDto<Prescription>> {
     const qb = this.prescriptionsRepository
       .createQueryBuilder('prescription')
       .leftJoinAndSelect('prescription.patient', 'patient')
@@ -29,11 +39,15 @@ export class PrescriptionsService {
       .leftJoinAndSelect('doctor.user', 'doctorUser');
 
     if (queryDto?.patientId) {
-      qb.andWhere('prescription.patientId = :patientId', { patientId: queryDto.patientId });
+      qb.andWhere('prescription.patientId = :patientId', {
+        patientId: queryDto.patientId,
+      });
     }
 
     if (queryDto?.doctorId) {
-      qb.andWhere('prescription.doctorId = :doctorId', { doctorId: queryDto.doctorId });
+      qb.andWhere('prescription.doctorId = :doctorId', {
+        doctorId: queryDto.doctorId,
+      });
     }
 
     if (queryDto?.search) {
@@ -50,22 +64,32 @@ export class PrescriptionsService {
     qb.skip(skip).take(take);
 
     const [prescriptions, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(prescriptions, pageMetaDto);
   }
 
-  async findMy(userId: number, queryDto?: QueryPrescriptionDto): Promise<PageDto<Prescription>> {
+  async findMy(
+    userId: number,
+    queryDto?: QueryPrescriptionDto,
+  ): Promise<PageDto<Prescription>> {
     const qb = this.prescriptionsRepository
       .createQueryBuilder('prescription')
       .leftJoinAndSelect('prescription.patient', 'patient')
       .leftJoinAndSelect('patient.user', 'patientUser')
       .leftJoinAndSelect('prescription.doctor', 'doctor')
       .leftJoinAndSelect('doctor.user', 'doctorUser')
-      .where('(patient.userId = :userId OR doctor.userId = :userId)', { userId });
+      .where('(patient.userId = :userId OR doctor.userId = :userId)', {
+        userId,
+      });
 
     if (queryDto?.search) {
-      qb.andWhere('(LOWER(prescription.medication) LIKE LOWER(:search))', { search: `%${queryDto.search}%` });
+      qb.andWhere('(LOWER(prescription.medication) LIKE LOWER(:search))', {
+        search: `%${queryDto.search}%`,
+      });
     }
 
     qb.orderBy('prescription.createdAt', 'DESC');
@@ -75,12 +99,19 @@ export class PrescriptionsService {
     qb.skip(skip).take(take);
 
     const [prescriptions, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(prescriptions, pageMetaDto);
   }
 
-  async findOne(id: number, userId?: number, roles: string[] = []): Promise<Prescription> {
+  async findOne(
+    id: number,
+    userId?: number,
+    roles: string[] = [],
+  ): Promise<Prescription> {
     const prescription = await this.prescriptionsRepository.findOne({
       where: { id },
       relations: {
@@ -94,16 +125,27 @@ export class PrescriptionsService {
     }
 
     // Role-based ownership check
-    if (roles.includes('patient') && !roles.includes('admin') && !roles.includes('doctor') && !roles.includes('nurse') && !roles.includes('pharmacist')) {
+    if (
+      roles.includes('patient') &&
+      !roles.includes('admin') &&
+      !roles.includes('doctor') &&
+      !roles.includes('nurse') &&
+      !roles.includes('pharmacist')
+    ) {
       if (prescription.patient?.userId !== userId) {
-        throw new ForbiddenException('You are not authorized to view this prescription');
+        throw new ForbiddenException(
+          'You are not authorized to view this prescription',
+        );
       }
     }
 
     return prescription;
   }
 
-  async update(id: number, updatePrescriptionDto: UpdatePrescriptionDto): Promise<Prescription> {
+  async update(
+    id: number,
+    updatePrescriptionDto: UpdatePrescriptionDto,
+  ): Promise<Prescription> {
     const prescription = await this.findOne(id);
     this.prescriptionsRepository.merge(prescription, updatePrescriptionDto);
     return this.prescriptionsRepository.save(prescription);

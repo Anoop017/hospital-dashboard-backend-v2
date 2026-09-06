@@ -1,12 +1,17 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Notification } from './entities/notification.entity';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { QueryNotificationDto } from './dto/query-notification.dto';
 import { PageDto } from '../common/pagination/page.dto';
 import { PageMetaDto } from '../common/pagination/page-meta.dto';
 import { User } from '../users/entities/user.entity';
+import { Admin } from '../admins/entities/admin.entity';
 
 @Injectable()
 export class NotificationsService {
@@ -15,10 +20,16 @@ export class NotificationsService {
     private readonly notificationsRepository: Repository<Notification>,
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    @InjectRepository(Admin)
+    private readonly adminsRepository: Repository<Admin>,
   ) {}
 
-  async create(createNotificationDto: CreateNotificationDto): Promise<Notification> {
-    const notification = this.notificationsRepository.create(createNotificationDto);
+  async create(
+    createNotificationDto: CreateNotificationDto,
+  ): Promise<Notification> {
+    const notification = this.notificationsRepository.create(
+      createNotificationDto,
+    );
     return this.notificationsRepository.save(notification);
   }
 
@@ -27,8 +38,7 @@ export class NotificationsService {
     data: Omit<CreateNotificationDto, 'userId'>,
   ): Promise<Notification[]> {
     if (!userIds || userIds.length === 0) return [];
-    
-    // De-duplicate user IDs
+
     const uniqueUserIds = Array.from(new Set(userIds));
     const notifications = uniqueUserIds.map((userId) =>
       this.notificationsRepository.create({
@@ -43,15 +53,17 @@ export class NotificationsService {
     data: Omit<CreateNotificationDto, 'userId'>,
   ): Promise<Notification[]> {
     try {
-      const adminUsers = await this.usersRepository
-        .createQueryBuilder('user')
-        .innerJoin('user.roles', 'role')
-        .where('role.name IN (:...roleNames)', { roleNames: ['admin', 'super_admin'] })
-        .andWhere('user.isActive = true')
-        .getMany();
+      const activeAdmins = await this.adminsRepository.find({
+        where: { isActive: true },
+      });
 
-      const adminUserIds = adminUsers.map((u) => u.id);
-      return this.createForUsers(adminUserIds, data);
+      const notifications = activeAdmins.map((admin) =>
+        this.notificationsRepository.create({
+          ...data,
+          adminId: admin.id,
+        }),
+      );
+      return this.notificationsRepository.save(notifications);
     } catch (error) {
       console.error('Failed to notify admins:', error);
       return [];
@@ -59,12 +71,17 @@ export class NotificationsService {
   }
 
   async findMyNotifications(
-    userId: number,
+    recipientId: number,
     queryDto?: QueryNotificationDto,
+    userType: string = 'user',
   ): Promise<PageDto<Notification>> {
-    const qb = this.notificationsRepository
-      .createQueryBuilder('notification')
-      .where('notification.userId = :userId', { userId });
+    const qb = this.notificationsRepository.createQueryBuilder('notification');
+
+    if (userType === 'admin') {
+      qb.where('notification.adminId = :recipientId', { recipientId });
+    } else {
+      qb.where('notification.userId = :recipientId', { recipientId });
+    }
 
     if (queryDto?.isRead !== undefined) {
       qb.andWhere('notification.isRead = :isRead', { isRead: queryDto.isRead });
@@ -82,7 +99,9 @@ export class NotificationsService {
     }
 
     const sortField =
-      queryDto?.sortBy === 'createdAt' ? 'notification.createdAt' : 'notification.createdAt';
+      queryDto?.sortBy === 'createdAt'
+        ? 'notification.createdAt'
+        : 'notification.createdAt';
     const sortOrder = queryDto?.sortOrder || 'DESC';
     qb.orderBy(sortField, sortOrder);
 
@@ -91,22 +110,36 @@ export class NotificationsService {
     qb.skip(skip).take(take);
 
     const [notifications, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(notifications, pageMetaDto);
   }
 
-  async getUnreadCount(userId: number): Promise<{ count: number }> {
+  async getUnreadCount(
+    recipientId: number,
+    userType: string = 'user',
+  ): Promise<{ count: number }> {
+    const whereCondition: any = { isRead: false };
+    if (userType === 'admin') {
+      whereCondition.adminId = recipientId;
+    } else {
+      whereCondition.userId = recipientId;
+    }
+
     const count = await this.notificationsRepository.count({
-      where: {
-        userId,
-        isRead: false,
-      },
+      where: whereCondition,
     });
     return { count };
   }
 
-  async markAsRead(id: number, userId: number): Promise<Notification> {
+  async markAsRead(
+    id: number,
+    recipientId: number,
+    userType: string = 'user',
+  ): Promise<Notification> {
     const notification = await this.notificationsRepository.findOne({
       where: { id },
     });
@@ -115,23 +148,43 @@ export class NotificationsService {
       throw new NotFoundException(`Notification with ID ${id} not found`);
     }
 
-    if (notification.userId !== userId) {
-      throw new ForbiddenException('You are not authorized to update this notification');
+    const isAuthorized =
+      userType === 'admin'
+        ? notification.adminId === recipientId
+        : notification.userId === recipientId;
+
+    if (!isAuthorized) {
+      throw new ForbiddenException(
+        'You are not authorized to update this notification',
+      );
     }
 
     notification.isRead = true;
     return this.notificationsRepository.save(notification);
   }
 
-  async markAllAsRead(userId: number): Promise<{ affected: number }> {
-    const result = await this.notificationsRepository.update(
-      { userId, isRead: false },
-      { isRead: true },
-    );
+  async markAllAsRead(
+    recipientId: number,
+    userType: string = 'user',
+  ): Promise<{ affected: number }> {
+    const whereCondition: any = { isRead: false };
+    if (userType === 'admin') {
+      whereCondition.adminId = recipientId;
+    } else {
+      whereCondition.userId = recipientId;
+    }
+
+    const result = await this.notificationsRepository.update(whereCondition, {
+      isRead: true,
+    });
     return { affected: result.affected || 0 };
   }
 
-  async remove(id: number, userId: number): Promise<void> {
+  async remove(
+    id: number,
+    recipientId: number,
+    userType: string = 'user',
+  ): Promise<void> {
     const notification = await this.notificationsRepository.findOne({
       where: { id },
     });
@@ -140,8 +193,15 @@ export class NotificationsService {
       throw new NotFoundException(`Notification with ID ${id} not found`);
     }
 
-    if (notification.userId !== userId) {
-      throw new ForbiddenException('You are not authorized to delete this notification');
+    const isAuthorized =
+      userType === 'admin'
+        ? notification.adminId === recipientId
+        : notification.userId === recipientId;
+
+    if (!isAuthorized) {
+      throw new ForbiddenException(
+        'You are not authorized to delete this notification',
+      );
     }
 
     await this.notificationsRepository.softRemove(notification);

@@ -1,6 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
-import { NotificationPriority, NotificationType } from '../entities/notification.entity';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import {
+  NotificationPriority,
+  NotificationType,
+} from '../entities/notification.entity';
 
 export class CreateNotificationDto {
   @ApiProperty({ description: 'Recipient user ID' })
@@ -18,17 +28,25 @@ export class CreateNotificationDto {
   @IsNotEmpty()
   message: string;
 
-  @ApiPropertyOptional({ enum: NotificationType, default: NotificationType.SYSTEM })
+  @ApiPropertyOptional({
+    enum: NotificationType,
+    default: NotificationType.SYSTEM,
+  })
   @IsOptional()
   @IsString()
   type?: string = NotificationType.SYSTEM;
 
-  @ApiPropertyOptional({ enum: NotificationPriority, default: NotificationPriority.INFO })
+  @ApiPropertyOptional({
+    enum: NotificationPriority,
+    default: NotificationPriority.INFO,
+  })
   @IsOptional()
   @IsString()
   priority?: string = NotificationPriority.INFO;
 
-  @ApiPropertyOptional({ description: 'Action URL/route when clicking notification' })
+  @ApiPropertyOptional({
+    description: 'Action URL/route when clicking notification',
+  })
   @IsOptional()
   @IsString()
   link?: string;

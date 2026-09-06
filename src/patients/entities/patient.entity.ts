@@ -34,12 +34,18 @@ export class Patient extends BaseEntity {
   @Column({ default: 'active' })
   status: string;
 
-  @OneToMany(() => EmergencyContact, (contact) => contact.patient, { cascade: true })
+  @OneToMany(() => EmergencyContact, (contact) => contact.patient, {
+    cascade: true,
+  })
   emergencyContacts: EmergencyContact[];
 
-  @OneToMany(() => PatientAllergy, (allergy) => allergy.patient, { cascade: true })
+  @OneToMany(() => PatientAllergy, (allergy) => allergy.patient, {
+    cascade: true,
+  })
   allergies: PatientAllergy[];
 
-  @OneToMany(() => PatientCondition, (condition) => condition.patient, { cascade: true })
+  @OneToMany(() => PatientCondition, (condition) => condition.patient, {
+    cascade: true,
+  })
   conditions: PatientCondition[];
 }

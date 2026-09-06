@@ -1,10 +1,23 @@
-import { Controller, Post, Body, UseGuards, Get, Request, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  Request,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -19,7 +32,10 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Return access and refresh tokens' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -44,7 +60,10 @@ export class AuthController {
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'Request a password reset link via email' })
-  @ApiResponse({ status: 200, description: 'Password reset link sent if email exists' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset link sent if email exists',
+  })
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.authService.forgotPassword(forgotPasswordDto);
   }
@@ -70,8 +89,9 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   getProfile(@Request() req: any) {
-    const userId = Number(req.user.userId || req.user.sub);
-    return this.authService.getProfile(userId);
+    const userId = Number(req.user.userId || req.user.sub || req.user.id);
+    const userType = req.user.userType || 'user';
+    return this.authService.getProfile(userId, userType);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -80,8 +100,12 @@ export class AuthController {
   @ApiOperation({ summary: 'Change current user password' })
   @ApiResponse({ status: 200, description: 'Password successfully updated' })
   @ApiResponse({ status: 400, description: 'Current password is incorrect' })
-  async changePassword(@Request() req: any, @Body() changePasswordDto: ChangePasswordDto) {
-    const userId = Number(req.user.userId || req.user.sub);
-    return this.authService.changePassword(userId, changePasswordDto);
+  async changePassword(
+    @Request() req: any,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    const userId = Number(req.user.userId || req.user.sub || req.user.id);
+    const userType = req.user.userType || 'user';
+    return this.authService.changePassword(userId, changePasswordDto, userType);
   }
 }

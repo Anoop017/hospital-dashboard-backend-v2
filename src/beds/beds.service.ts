@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Bed } from './entities/bed.entity';
@@ -24,7 +28,9 @@ export class BedsService {
   }
 
   async findAll(wardId?: number, status?: string): Promise<Bed[]> {
-    const qb = this.bedsRepository.createQueryBuilder('bed').leftJoinAndSelect('bed.ward', 'ward');
+    const qb = this.bedsRepository
+      .createQueryBuilder('bed')
+      .leftJoinAndSelect('bed.ward', 'ward');
 
     if (wardId) {
       qb.andWhere('bed.wardId = :wardId', { wardId });
@@ -62,7 +68,18 @@ export class BedsService {
   async getAvailabilityMatrix() {
     const beds = await this.bedsRepository.find({ relations: { ward: true } });
 
-    const wardMap = new Map<number | string, { wardId: number | string; wardName: string; wardType: string; totalBeds: number; availableBeds: number; occupiedBeds: number; beds: any[] }>();
+    const wardMap = new Map<
+      number | string,
+      {
+        wardId: number | string;
+        wardName: string;
+        wardType: string;
+        totalBeds: number;
+        availableBeds: number;
+        occupiedBeds: number;
+        beds: any[];
+      }
+    >();
 
     beds.forEach((bed) => {
       const wardId = bed.wardId || 'unassigned';

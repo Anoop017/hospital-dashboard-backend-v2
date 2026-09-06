@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
 import { QueryMedicineDto } from './dto/query-medicine.dto';
@@ -16,7 +20,9 @@ export class MedicinesService {
   ) {}
 
   async create(createMedicineDto: CreateMedicineDto): Promise<Medicine> {
-    const existing = await this.medicinesRepository.findOne({ where: { name: createMedicineDto.name } });
+    const existing = await this.medicinesRepository.findOne({
+      where: { name: createMedicineDto.name },
+    });
     if (existing) {
       throw new ConflictException('Medicine with this name already exists');
     }
@@ -28,7 +34,9 @@ export class MedicinesService {
     const qb = this.medicinesRepository.createQueryBuilder('medicine');
 
     if (queryDto?.category) {
-      qb.andWhere('LOWER(medicine.category) = LOWER(:category)', { category: queryDto.category });
+      qb.andWhere('LOWER(medicine.category) = LOWER(:category)', {
+        category: queryDto.category,
+      });
     }
 
     if (queryDto?.lowStock) {
@@ -42,14 +50,20 @@ export class MedicinesService {
       );
     }
 
-    qb.orderBy('medicine.name', queryDto?.sortOrder === 'DESC' ? 'DESC' : 'ASC');
+    qb.orderBy(
+      'medicine.name',
+      queryDto?.sortOrder === 'DESC' ? 'DESC' : 'ASC',
+    );
 
     const skip = queryDto?.skip || 0;
     const take = queryDto?.take || 10;
     qb.skip(skip).take(take);
 
     const [medicines, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(medicines, pageMetaDto);
   }
@@ -62,11 +76,16 @@ export class MedicinesService {
     return medicine;
   }
 
-  async update(id: number, updateMedicineDto: UpdateMedicineDto): Promise<Medicine> {
+  async update(
+    id: number,
+    updateMedicineDto: UpdateMedicineDto,
+  ): Promise<Medicine> {
     const medicine = await this.findOne(id);
 
     if (updateMedicineDto.name && updateMedicineDto.name !== medicine.name) {
-      const existing = await this.medicinesRepository.findOne({ where: { name: updateMedicineDto.name } });
+      const existing = await this.medicinesRepository.findOne({
+        where: { name: updateMedicineDto.name },
+      });
       if (existing) {
         throw new ConflictException('Medicine with this name already exists');
       }
@@ -85,8 +104,12 @@ export class MedicinesService {
 
   async getInventoryStats() {
     const total = await this.medicinesRepository.count();
-    const lowStock = await this.medicinesRepository.count({ where: { stockQuantity: LessThanOrEqual(20) } });
-    const outOfStock = await this.medicinesRepository.count({ where: { stockQuantity: 0 } });
+    const lowStock = await this.medicinesRepository.count({
+      where: { stockQuantity: LessThanOrEqual(20) },
+    });
+    const outOfStock = await this.medicinesRepository.count({
+      where: { stockQuantity: 0 },
+    });
 
     return {
       totalMedicines: total,

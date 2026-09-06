@@ -4,7 +4,9 @@ import { Patient } from './patient.entity';
 
 @Entity('patient_conditions')
 export class PatientCondition extends BaseEntity {
-  @ManyToOne(() => Patient, (patient) => patient.conditions, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Patient, (patient) => patient.conditions, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'patientId' })
   patient: Patient;
 

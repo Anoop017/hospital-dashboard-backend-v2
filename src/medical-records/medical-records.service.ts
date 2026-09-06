@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MedicalRecord } from './entities/medical-record.entity';
@@ -15,12 +19,18 @@ export class MedicalRecordsService {
     private medicalRecordsRepository: Repository<MedicalRecord>,
   ) {}
 
-  async create(createMedicalRecordDto: CreateMedicalRecordDto): Promise<MedicalRecord> {
-    const medicalRecord = this.medicalRecordsRepository.create(createMedicalRecordDto);
+  async create(
+    createMedicalRecordDto: CreateMedicalRecordDto,
+  ): Promise<MedicalRecord> {
+    const medicalRecord = this.medicalRecordsRepository.create(
+      createMedicalRecordDto,
+    );
     return this.medicalRecordsRepository.save(medicalRecord);
   }
 
-  async findAll(queryDto?: QueryMedicalRecordDto): Promise<PageDto<MedicalRecord>> {
+  async findAll(
+    queryDto?: QueryMedicalRecordDto,
+  ): Promise<PageDto<MedicalRecord>> {
     const qb = this.medicalRecordsRepository
       .createQueryBuilder('record')
       .leftJoinAndSelect('record.patient', 'patient')
@@ -29,15 +39,21 @@ export class MedicalRecordsService {
       .leftJoinAndSelect('doctor.user', 'doctorUser');
 
     if (queryDto?.patientId) {
-      qb.andWhere('record.patientId = :patientId', { patientId: queryDto.patientId });
+      qb.andWhere('record.patientId = :patientId', {
+        patientId: queryDto.patientId,
+      });
     }
 
     if (queryDto?.doctorId) {
-      qb.andWhere('record.doctorId = :doctorId', { doctorId: queryDto.doctorId });
+      qb.andWhere('record.doctorId = :doctorId', {
+        doctorId: queryDto.doctorId,
+      });
     }
 
     if (queryDto?.diagnosis) {
-      qb.andWhere('LOWER(record.diagnosis) LIKE LOWER(:diagnosis)', { diagnosis: `%${queryDto.diagnosis}%` });
+      qb.andWhere('LOWER(record.diagnosis) LIKE LOWER(:diagnosis)', {
+        diagnosis: `%${queryDto.diagnosis}%`,
+      });
     }
 
     if (queryDto?.search) {
@@ -54,19 +70,27 @@ export class MedicalRecordsService {
     qb.skip(skip).take(take);
 
     const [records, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(records, pageMetaDto);
   }
 
-  async findMy(userId: number, queryDto?: QueryMedicalRecordDto): Promise<PageDto<MedicalRecord>> {
+  async findMy(
+    userId: number,
+    queryDto?: QueryMedicalRecordDto,
+  ): Promise<PageDto<MedicalRecord>> {
     const qb = this.medicalRecordsRepository
       .createQueryBuilder('record')
       .leftJoinAndSelect('record.patient', 'patient')
       .leftJoinAndSelect('patient.user', 'patientUser')
       .leftJoinAndSelect('record.doctor', 'doctor')
       .leftJoinAndSelect('doctor.user', 'doctorUser')
-      .where('(patient.userId = :userId OR doctor.userId = :userId)', { userId });
+      .where('(patient.userId = :userId OR doctor.userId = :userId)', {
+        userId,
+      });
 
     if (queryDto?.search) {
       qb.andWhere(
@@ -82,7 +106,10 @@ export class MedicalRecordsService {
     qb.skip(skip).take(take);
 
     const [records, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(records, pageMetaDto);
   }
@@ -98,7 +125,11 @@ export class MedicalRecordsService {
     });
   }
 
-  async findOne(id: number, userId?: number, roles: string[] = []): Promise<MedicalRecord> {
+  async findOne(
+    id: number,
+    userId?: number,
+    roles: string[] = [],
+  ): Promise<MedicalRecord> {
     const medicalRecord = await this.medicalRecordsRepository.findOne({
       where: { id },
       relations: {
@@ -112,16 +143,26 @@ export class MedicalRecordsService {
     }
 
     // Role-based ownership check
-    if (roles.includes('patient') && !roles.includes('admin') && !roles.includes('doctor') && !roles.includes('nurse')) {
+    if (
+      roles.includes('patient') &&
+      !roles.includes('admin') &&
+      !roles.includes('doctor') &&
+      !roles.includes('nurse')
+    ) {
       if (medicalRecord.patient?.userId !== userId) {
-        throw new ForbiddenException('You are not authorized to view this medical record');
+        throw new ForbiddenException(
+          'You are not authorized to view this medical record',
+        );
       }
     }
 
     return medicalRecord;
   }
 
-  async update(id: number, updateMedicalRecordDto: UpdateMedicalRecordDto): Promise<MedicalRecord> {
+  async update(
+    id: number,
+    updateMedicalRecordDto: UpdateMedicalRecordDto,
+  ): Promise<MedicalRecord> {
     const medicalRecord = await this.findOne(id);
     this.medicalRecordsRepository.merge(medicalRecord, updateMedicalRecordDto);
     return this.medicalRecordsRepository.save(medicalRecord);

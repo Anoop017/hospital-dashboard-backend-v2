@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, MoreThanOrEqual } from 'typeorm';
 import { Patient } from './entities/patient.entity';
@@ -32,7 +37,9 @@ export class PatientsService {
       where: { userId: createPatientDto.userId },
     });
     if (existing) {
-      throw new ConflictException('Patient profile already exists for this user');
+      throw new ConflictException(
+        'Patient profile already exists for this user',
+      );
     }
     const patient = this.patientsRepository.create(createPatientDto);
     return this.patientsRepository.save(patient);
@@ -100,7 +107,9 @@ export class PatientsService {
           name: p.user ? `${p.user.firstName} ${p.user.lastName}` : 'Unknown',
           room: roomMap.get(p.id) || 'Outpatient',
           age: age,
-          dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth).toISOString().split('T')[0] : null,
+          dateOfBirth: p.dateOfBirth
+            ? new Date(p.dateOfBirth).toISOString().split('T')[0]
+            : null,
           gender: p.gender,
           bloodGroup: p.bloodGroup,
           status: p.status === 'active' ? 'Active' : 'Inactive',
@@ -123,7 +132,9 @@ export class PatientsService {
     }
 
     if (queryDto?.bloodGroup) {
-      qb.andWhere('patient.bloodGroup = :bloodGroup', { bloodGroup: queryDto.bloodGroup });
+      qb.andWhere('patient.bloodGroup = :bloodGroup', {
+        bloodGroup: queryDto.bloodGroup,
+      });
     }
 
     if (queryDto?.status) {
@@ -145,9 +156,15 @@ export class PatientsService {
     qb.skip(skip).take(take);
 
     const [patients, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
-    return new PageDto(patients.filter((p) => p.user !== null), pageMetaDto);
+    return new PageDto(
+      patients.filter((p) => p.user !== null),
+      pageMetaDto,
+    );
   }
 
   async findOneByUserId(userId: number): Promise<Patient> {
@@ -166,7 +183,11 @@ export class PatientsService {
     return patient;
   }
 
-  async findOne(id: number, userId?: number, roles: string[] = []): Promise<Patient> {
+  async findOne(
+    id: number,
+    userId?: number,
+    roles: string[] = [],
+  ): Promise<Patient> {
     const patient = await this.patientsRepository.findOne({
       where: { id },
       relations: {
@@ -182,9 +203,17 @@ export class PatientsService {
     }
 
     // Role-based data ownership verification
-    if (roles.includes('patient') && !roles.includes('admin') && !roles.includes('receptionist') && !roles.includes('doctor') && !roles.includes('nurse')) {
+    if (
+      roles.includes('patient') &&
+      !roles.includes('admin') &&
+      !roles.includes('receptionist') &&
+      !roles.includes('doctor') &&
+      !roles.includes('nurse')
+    ) {
       if (patient.userId !== userId) {
-        throw new ForbiddenException('You are not authorized to view this patient profile');
+        throw new ForbiddenException(
+          'You are not authorized to view this patient profile',
+        );
       }
     }
 
@@ -194,26 +223,32 @@ export class PatientsService {
   async getPatientSummary(id: number) {
     const patient = await this.findOne(id);
 
-    const appointments = await this.dataSource.getRepository('Appointment').find({
-      where: { patientId: id },
-      relations: { doctor: { user: true } },
-      order: { appointmentDate: 'DESC' },
-      take: 5,
-    });
+    const appointments = await this.dataSource
+      .getRepository('Appointment')
+      .find({
+        where: { patientId: id },
+        relations: { doctor: { user: true } },
+        order: { appointmentDate: 'DESC' },
+        take: 5,
+      });
 
-    const medicalRecords = await this.dataSource.getRepository('MedicalRecord').find({
-      where: { patientId: id },
-      relations: { doctor: { user: true } },
-      order: { recordDate: 'DESC' },
-      take: 5,
-    });
+    const medicalRecords = await this.dataSource
+      .getRepository('MedicalRecord')
+      .find({
+        where: { patientId: id },
+        relations: { doctor: { user: true } },
+        order: { recordDate: 'DESC' },
+        take: 5,
+      });
 
-    const prescriptions = await this.dataSource.getRepository('Prescription').find({
-      where: { patientId: id },
-      relations: { doctor: { user: true } },
-      order: { issuedDate: 'DESC' },
-      take: 5,
-    });
+    const prescriptions = await this.dataSource
+      .getRepository('Prescription')
+      .find({
+        where: { patientId: id },
+        relations: { doctor: { user: true } },
+        order: { issuedDate: 'DESC' },
+        take: 5,
+      });
 
     const admissions = await this.dataSource.getRepository('Admission').find({
       where: { patientId: id },
@@ -240,7 +275,10 @@ export class PatientsService {
     };
   }
 
-  async update(id: number, updatePatientDto: UpdatePatientDto): Promise<Patient> {
+  async update(
+    id: number,
+    updatePatientDto: UpdatePatientDto,
+  ): Promise<Patient> {
     const patient = await this.findOne(id);
     this.patientsRepository.merge(patient, updatePatientDto);
     return this.patientsRepository.save(patient);

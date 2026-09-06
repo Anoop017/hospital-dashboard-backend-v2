@@ -10,7 +10,9 @@ export class QueryDoctorDto extends BaseQueryDto {
   @IsOptional()
   readonly departmentId?: number;
 
-  @ApiPropertyOptional({ description: 'Filter by specialization (e.g. Cardiology, Neurology)' })
+  @ApiPropertyOptional({
+    description: 'Filter by specialization (e.g. Cardiology, Neurology)',
+  })
   @IsString()
   @IsOptional()
   readonly specialization?: string;

@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { CreateDoctorWithUserDto } from './dto/create-doctor-with-user.dto';
@@ -26,14 +38,18 @@ export class DoctorsController {
 
   @Post('with-user')
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Create a new doctor profile along with a new user account' })
+  @ApiOperation({
+    summary: 'Create a new doctor profile along with a new user account',
+  })
   createWithUser(@Body() createDoctorWithUserDto: CreateDoctorWithUserDto) {
     return this.doctorsService.createWithUser(createDoctorWithUserDto);
   }
 
   @Get()
   @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT, Role.NURSE, Role.DOCTOR)
-  @ApiOperation({ summary: 'Get all doctors with pagination, search, and department filter' })
+  @ApiOperation({
+    summary: 'Get all doctors with pagination, search, and department filter',
+  })
   findAll(@Query() queryDto: QueryDoctorDto) {
     return this.doctorsService.findAll(queryDto);
   }
@@ -56,7 +72,10 @@ export class DoctorsController {
   @Patch(':id')
   @Roles(Role.ADMIN, Role.DOCTOR)
   @ApiOperation({ summary: 'Update a doctor profile' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateDoctorDto: UpdateDoctorDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateDoctorDto: UpdateDoctorDto,
+  ) {
     return this.doctorsService.update(id, updateDoctorDto);
   }
 

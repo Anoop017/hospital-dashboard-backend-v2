@@ -32,7 +32,9 @@ describe('PatientsService', () => {
   describe('create', () => {
     it('should throw ConflictException if profile exists for user', async () => {
       mockRepo.findOne.mockResolvedValueOnce({ id: 1 });
-      await expect(service.create({ userId: 1 })).rejects.toThrow(ConflictException);
+      await expect(service.create({ userId: 1 })).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('should create patient', async () => {

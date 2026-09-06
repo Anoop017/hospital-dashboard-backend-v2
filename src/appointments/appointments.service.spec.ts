@@ -18,10 +18,22 @@ describe('AppointmentsService', () => {
       providers: [
         AppointmentsService,
         { provide: getRepositoryToken(Appointment), useClass: MockRepository },
-        { provide: NotificationsService, useValue: { create: jest.fn(), createForAdmins: jest.fn() } },
-        { provide: MailService, useValue: { sendAppointmentCreatedEmail: jest.fn(), sendAppointmentStatusChangedEmail: jest.fn() } },
+        {
+          provide: NotificationsService,
+          useValue: { create: jest.fn(), createForAdmins: jest.fn() },
+        },
+        {
+          provide: MailService,
+          useValue: {
+            sendAppointmentCreatedEmail: jest.fn(),
+            sendAppointmentStatusChangedEmail: jest.fn(),
+          },
+        },
         { provide: ConfigService, useValue: { get: jest.fn() } },
-        { provide: RedisService, useValue: { delByPattern: jest.fn().mockResolvedValue(0) } },
+        {
+          provide: RedisService,
+          useValue: { delByPattern: jest.fn().mockResolvedValue(0) },
+        },
       ],
     }).compile();
 
@@ -31,7 +43,12 @@ describe('AppointmentsService', () => {
 
   it('should create an appointment', async () => {
     mockRepo.save.mockResolvedValue({ id: 1 });
-    const result = await service.create({ patientId: 1, doctorId: 1, appointmentDate: new Date().toISOString(), reason: 'Checkup' });
+    const result = await service.create({
+      patientId: 1,
+      doctorId: 1,
+      appointmentDate: new Date().toISOString(),
+      reason: 'Checkup',
+    });
     expect(result).toEqual({ id: 1 });
   });
 

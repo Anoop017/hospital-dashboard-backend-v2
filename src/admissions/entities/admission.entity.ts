@@ -34,7 +34,11 @@ export class Admission extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true })
   dischargeDate: Date;
 
-  @Column({ type: 'enum', enum: AdmissionStatus, default: AdmissionStatus.ADMITTED })
+  @Column({
+    type: 'enum',
+    enum: AdmissionStatus,
+    default: AdmissionStatus.ADMITTED,
+  })
   status: AdmissionStatus;
 
   @Column({ type: 'text' })

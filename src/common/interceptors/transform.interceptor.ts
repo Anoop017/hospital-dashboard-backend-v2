@@ -19,9 +19,10 @@ export interface ApiResponse<T> {
 }
 
 @Injectable()
-export class TransformInterceptor<T>
-  implements NestInterceptor<T, ApiResponse<T>>
-{
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponse<T>
+> {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
@@ -34,12 +35,20 @@ export class TransformInterceptor<T>
     return next.handle().pipe(
       map((resData) => {
         // If response is already in wrapped format, return directly
-        if (resData && typeof resData === 'object' && resData.success !== undefined && resData.data !== undefined) {
+        if (
+          resData &&
+          typeof resData === 'object' &&
+          resData.success !== undefined &&
+          resData.data !== undefined
+        ) {
           return resData;
         }
 
         // If response is a PageDto with data and meta
-        if (resData instanceof PageDto || (resData && resData.data !== undefined && resData.meta !== undefined)) {
+        if (
+          resData instanceof PageDto ||
+          (resData && resData.data !== undefined && resData.meta !== undefined)
+        ) {
           return {
             success: true,
             statusCode,

@@ -3,7 +3,9 @@ export const MockRepository = jest.fn().mockReturnValue({
   save: jest.fn().mockResolvedValue({ id: 'some-uuid' }),
   find: jest.fn().mockResolvedValue([]),
   findOne: jest.fn().mockResolvedValue(null),
-  merge: jest.fn().mockImplementation((entity, dto) => Object.assign(entity, dto)),
+  merge: jest
+    .fn()
+    .mockImplementation((entity, dto) => Object.assign(entity, dto)),
   softRemove: jest.fn().mockResolvedValue(undefined),
 });
 

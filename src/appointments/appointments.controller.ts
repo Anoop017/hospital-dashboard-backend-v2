@@ -1,9 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { QueryAppointmentDto } from './dto/query-appointment.dto';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -28,13 +45,18 @@ export class AppointmentsController {
   @ApiOperation({ summary: 'Check doctor slot availability for a given date' })
   @ApiQuery({ name: 'doctorId', required: true, type: Number })
   @ApiQuery({ name: 'date', required: true, example: '2026-08-30' })
-  getAvailableSlots(@Query('doctorId', ParseIntPipe) doctorId: number, @Query('date') date: string) {
+  getAvailableSlots(
+    @Query('doctorId', ParseIntPipe) doctorId: number,
+    @Query('date') date: string,
+  ) {
     return this.appointmentsService.getAvailableSlots(doctorId, date);
   }
 
   @Get()
   @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR, Role.NURSE, Role.STAFF)
-  @ApiOperation({ summary: 'Get all appointments with pagination, search, and filters' })
+  @ApiOperation({
+    summary: 'Get all appointments with pagination, search, and filters',
+  })
   findAll(@Query() queryDto: QueryAppointmentDto) {
     return this.appointmentsService.findAll(queryDto);
   }
@@ -59,14 +81,22 @@ export class AppointmentsController {
   @Patch(':id')
   @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR, Role.PATIENT)
   @ApiOperation({ summary: 'Update an appointment' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateAppointmentDto: UpdateAppointmentDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAppointmentDto: UpdateAppointmentDto,
+  ) {
     return this.appointmentsService.update(id, updateAppointmentDto);
   }
 
   @Patch(':id/status')
   @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.DOCTOR, Role.PATIENT)
-  @ApiOperation({ summary: 'Update appointment status (cancel, check-in, complete)' })
-  updateStatus(@Param('id', ParseIntPipe) id: number, @Body('status') status: string) {
+  @ApiOperation({
+    summary: 'Update appointment status (cancel, check-in, complete)',
+  })
+  updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('status') status: string,
+  ) {
     return this.appointmentsService.updateStatus(id, status);
   }
 

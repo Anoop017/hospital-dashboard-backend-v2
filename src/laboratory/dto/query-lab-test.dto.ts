@@ -16,7 +16,9 @@ export class QueryLabTestDto extends BaseQueryDto {
   @IsOptional()
   readonly doctorId?: number;
 
-  @ApiPropertyOptional({ description: 'Filter by status (e.g. pending, completed, cancelled)' })
+  @ApiPropertyOptional({
+    description: 'Filter by status (e.g. pending, completed, cancelled)',
+  })
   @IsString()
   @IsOptional()
   readonly status?: string;

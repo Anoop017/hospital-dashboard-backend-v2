@@ -98,4 +98,9 @@ AuditLogSchema.index({ isAdmin: 1, createdAt: -1 });
 AuditLogSchema.index({ module: 1, createdAt: -1 });
 AuditLogSchema.index({ status: 1, createdAt: -1 });
 AuditLogSchema.index({ userId: 1, createdAt: -1 });
-AuditLogSchema.index({ details: 'text', description: 'text', userEmail: 'text', userName: 'text' });
+AuditLogSchema.index({
+  details: 'text',
+  description: 'text',
+  userEmail: 'text',
+  userName: 'text',
+});

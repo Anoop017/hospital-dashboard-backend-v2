@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { Bill } from './entities/bill.entity';
@@ -42,15 +46,21 @@ export class BillingService {
     }
 
     if (queryDto?.patientId) {
-      qb.andWhere('bill.patientId = :patientId', { patientId: queryDto.patientId });
+      qb.andWhere('bill.patientId = :patientId', {
+        patientId: queryDto.patientId,
+      });
     }
 
     if (queryDto?.admissionId) {
-      qb.andWhere('bill.admissionId = :admissionId', { admissionId: queryDto.admissionId });
+      qb.andWhere('bill.admissionId = :admissionId', {
+        admissionId: queryDto.admissionId,
+      });
     }
 
     if (queryDto?.appointmentId) {
-      qb.andWhere('bill.appointmentId = :appointmentId', { appointmentId: queryDto.appointmentId });
+      qb.andWhere('bill.appointmentId = :appointmentId', {
+        appointmentId: queryDto.appointmentId,
+      });
     }
 
     if (queryDto?.search) {
@@ -66,12 +76,19 @@ export class BillingService {
         endDate: new Date(queryDto.endDate),
       });
     } else if (queryDto?.startDate) {
-      qb.andWhere('bill.createdAt >= :startDate', { startDate: new Date(queryDto.startDate) });
+      qb.andWhere('bill.createdAt >= :startDate', {
+        startDate: new Date(queryDto.startDate),
+      });
     } else if (queryDto?.endDate) {
-      qb.andWhere('bill.createdAt <= :endDate', { endDate: new Date(queryDto.endDate) });
+      qb.andWhere('bill.createdAt <= :endDate', {
+        endDate: new Date(queryDto.endDate),
+      });
     }
 
-    const sortField = queryDto?.sortBy === 'totalAmount' ? 'bill.totalAmount' : 'bill.createdAt';
+    const sortField =
+      queryDto?.sortBy === 'totalAmount'
+        ? 'bill.totalAmount'
+        : 'bill.createdAt';
     const sortOrder = queryDto?.sortOrder || 'DESC';
     qb.orderBy(sortField, sortOrder);
 
@@ -80,25 +97,41 @@ export class BillingService {
     qb.skip(skip).take(take);
 
     const [bills, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(bills, pageMetaDto);
   }
 
-  async findMyBills(userId: number, queryDto?: QueryBillDto): Promise<PageDto<Bill>> {
+  async findMyBills(
+    userId: number,
+    queryDto?: QueryBillDto,
+  ): Promise<PageDto<Bill>> {
     const patient = await this.patientRepository.findOne({ where: { userId } });
     if (!patient) {
-      throw new NotFoundException('Patient profile not found for the current user');
+      throw new NotFoundException(
+        'Patient profile not found for the current user',
+      );
     }
 
-    const mergedQuery: QueryBillDto = Object.assign(new QueryBillDto(), queryDto, {
-      patientId: patient.id,
-    });
+    const mergedQuery: QueryBillDto = Object.assign(
+      new QueryBillDto(),
+      queryDto,
+      {
+        patientId: patient.id,
+      },
+    );
 
     return this.findAllBills(mergedQuery);
   }
 
-  async findOneBill(id: number, userId?: number, roles: string[] = []): Promise<Bill> {
+  async findOneBill(
+    id: number,
+    userId?: number,
+    roles: string[] = [],
+  ): Promise<Bill> {
     const bill = await this.billsRepository.findOne({
       where: { id },
       relations: {
@@ -114,10 +147,18 @@ export class BillingService {
     }
 
     // Role-based data ownership verification
-    if (roles.includes('patient') && !roles.includes('admin') && !roles.includes('receptionist')) {
-      const patient = await this.patientRepository.findOne({ where: { userId } });
+    if (
+      roles.includes('patient') &&
+      !roles.includes('admin') &&
+      !roles.includes('receptionist')
+    ) {
+      const patient = await this.patientRepository.findOne({
+        where: { userId },
+      });
       if (!patient || patient.id !== bill.patientId) {
-        throw new ForbiddenException('You are not authorized to view this bill');
+        throw new ForbiddenException(
+          'You are not authorized to view this bill',
+        );
       }
     }
 
@@ -142,7 +183,9 @@ export class BillingService {
       });
 
       if (!bill) {
-        throw new NotFoundException(`Bill with ID ${createPaymentDto.billId} not found`);
+        throw new NotFoundException(
+          `Bill with ID ${createPaymentDto.billId} not found`,
+        );
       }
 
       const payment = queryRunner.manager.create(Payment, createPaymentDto);
@@ -170,9 +213,15 @@ export class BillingService {
 
   async getBillingStats() {
     const totalBills = await this.billsRepository.count();
-    const paidBills = await this.billsRepository.count({ where: { status: 'paid' } });
-    const partiallyPaidBills = await this.billsRepository.count({ where: { status: 'partially_paid' } });
-    const unpaidBills = await this.billsRepository.count({ where: { status: 'unpaid' } });
+    const paidBills = await this.billsRepository.count({
+      where: { status: 'paid' },
+    });
+    const partiallyPaidBills = await this.billsRepository.count({
+      where: { status: 'partially_paid' },
+    });
+    const unpaidBills = await this.billsRepository.count({
+      where: { status: 'unpaid' },
+    });
 
     const totalRevenueRaw = await this.paymentsRepository
       .createQueryBuilder('payment')
@@ -206,7 +255,10 @@ export class BillingService {
         totalBilled,
         totalRevenue,
         outstandingReceivables,
-        collectionRate: totalBilled > 0 ? Number(((totalRevenue / totalBilled) * 100).toFixed(2)) : 0,
+        collectionRate:
+          totalBilled > 0
+            ? Number(((totalRevenue / totalBilled) * 100).toFixed(2))
+            : 0,
       },
       paymentMethods: paymentMethodsRaw.map((pm) => ({
         method: pm.method,
@@ -227,16 +279,25 @@ export class BillingService {
       status: bill.status,
       totalAmount: bill.totalAmount,
       paidAmount: bill.paidAmount,
-      balanceDue: Math.max(0, Number(bill.totalAmount) - Number(bill.paidAmount)),
+      balanceDue: Math.max(
+        0,
+        Number(bill.totalAmount) - Number(bill.paidAmount),
+      ),
       patient: {
         id: bill.patient?.id,
-        name: bill.patient?.user ? `${bill.patient.user.firstName} ${bill.patient.user.lastName}` : 'N/A',
+        name: bill.patient?.user
+          ? `${bill.patient.user.firstName} ${bill.patient.user.lastName}`
+          : 'N/A',
         email: bill.patient?.user?.email,
         phone: bill.patient?.user?.mobile,
         address: bill.patient?.address,
       },
-      admission: bill.admission ? { id: bill.admission.id, admissionDate: bill.admission.admissionDate } : null,
-      appointment: bill.appointment ? { id: bill.appointment.id, date: bill.appointment.appointmentDate } : null,
+      admission: bill.admission
+        ? { id: bill.admission.id, admissionDate: bill.admission.admissionDate }
+        : null,
+      appointment: bill.appointment
+        ? { id: bill.appointment.id, date: bill.appointment.appointmentDate }
+        : null,
       payments: (bill.payments || []).map((p) => ({
         id: p.id,
         amount: p.amount,

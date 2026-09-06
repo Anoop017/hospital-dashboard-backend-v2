@@ -79,7 +79,12 @@ describe('AuthService', () => {
 
   describe('validateUser', () => {
     it('should return user without password if credentials are valid', async () => {
-      const mockUser = { id: '1', email: 'test@test.com', passwordHash: 'hashed-password', roles: [] };
+      const mockUser = {
+        id: '1',
+        email: 'test@test.com',
+        passwordHash: 'hashed-password',
+        roles: [],
+      };
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
@@ -97,20 +102,32 @@ describe('AuthService', () => {
     });
 
     it('should return null if password invalid', async () => {
-      const mockUser = { id: '1', email: 'test@test.com', passwordHash: 'hashed-password', roles: [] };
+      const mockUser = {
+        id: '1',
+        email: 'test@test.com',
+        passwordHash: 'hashed-password',
+        roles: [],
+      };
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      const result = await service.validateUser('test@test.com', 'wrong-password');
+      const result = await service.validateUser(
+        'test@test.com',
+        'wrong-password',
+      );
       expect(result).toBeNull();
     });
   });
 
   describe('login', () => {
     it('should return access token on successful login', async () => {
-      const mockUser = { id: '1', email: 'test@test.com', roles: [{ name: 'admin' }] };
+      const mockUser = {
+        id: '1',
+        email: 'test@test.com',
+        roles: [{ name: 'admin' }],
+      };
       const result = await service.login(mockUser as any);
-      
+
       expect(jwtService.sign).toHaveBeenCalled();
       expect(result.accessToken).toEqual('test-token');
     });

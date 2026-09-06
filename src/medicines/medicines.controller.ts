@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { MedicinesService } from './medicines.service';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
@@ -25,13 +36,17 @@ export class MedicinesController {
 
   @Get('stats')
   @Roles(Role.ADMIN, Role.PHARMACIST)
-  @ApiOperation({ summary: 'Get medicine inventory statistics (low stock, out of stock)' })
+  @ApiOperation({
+    summary: 'Get medicine inventory statistics (low stock, out of stock)',
+  })
   getStats() {
     return this.medicinesService.getInventoryStats();
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all medicines with pagination, search, and low-stock filter' })
+  @ApiOperation({
+    summary: 'Get all medicines with pagination, search, and low-stock filter',
+  })
   findAll(@Query() queryDto: QueryMedicineDto) {
     return this.medicinesService.findAll(queryDto);
   }
@@ -45,7 +60,10 @@ export class MedicinesController {
   @Roles(Role.ADMIN, Role.PHARMACIST)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a medicine' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateMedicineDto: UpdateMedicineDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateMedicineDto: UpdateMedicineDto,
+  ) {
     return this.medicinesService.update(id, updateMedicineDto);
   }
 

@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { Appointment } from './entities/appointment.entity';
@@ -8,7 +12,10 @@ import { QueryAppointmentDto } from './dto/query-appointment.dto';
 import { PageDto } from '../common/pagination/page.dto';
 import { PageMetaDto } from '../common/pagination/page-meta.dto';
 import { NotificationsService } from '../notifications/notifications.service';
-import { NotificationPriority, NotificationType } from '../notifications/entities/notification.entity';
+import {
+  NotificationPriority,
+  NotificationType,
+} from '../notifications/entities/notification.entity';
 import { MailService } from '../mail/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { RedisService } from '../redis/redis.service';
@@ -24,8 +31,11 @@ export class AppointmentsService {
     private readonly redisService: RedisService,
   ) {}
 
-  async create(createAppointmentDto: CreateAppointmentDto): Promise<Appointment> {
-    const appointment = this.appointmentsRepository.create(createAppointmentDto);
+  async create(
+    createAppointmentDto: CreateAppointmentDto,
+  ): Promise<Appointment> {
+    const appointment =
+      this.appointmentsRepository.create(createAppointmentDto);
     const saved = await this.appointmentsRepository.save(appointment);
 
     // Invalidate dashboard cache
@@ -33,7 +43,10 @@ export class AppointmentsService {
 
     // Asynchronously dispatch notifications
     this.sendAppointmentCreatedNotifications(saved.id).catch((err) =>
-      console.error('Failed to dispatch appointment created notification:', err),
+      console.error(
+        'Failed to dispatch appointment created notification:',
+        err,
+      ),
     );
 
     return saved;
@@ -52,11 +65,15 @@ export class AppointmentsService {
     }
 
     if (queryDto?.doctorId) {
-      qb.andWhere('appointment.doctorId = :doctorId', { doctorId: queryDto.doctorId });
+      qb.andWhere('appointment.doctorId = :doctorId', {
+        doctorId: queryDto.doctorId,
+      });
     }
 
     if (queryDto?.patientId) {
-      qb.andWhere('appointment.patientId = :patientId', { patientId: queryDto.patientId });
+      qb.andWhere('appointment.patientId = :patientId', {
+        patientId: queryDto.patientId,
+      });
     }
 
     if (queryDto?.search) {
@@ -67,17 +84,27 @@ export class AppointmentsService {
     }
 
     if (queryDto?.startDate && queryDto?.endDate) {
-      qb.andWhere('appointment.appointmentDate BETWEEN :startDate AND :endDate', {
+      qb.andWhere(
+        'appointment.appointmentDate BETWEEN :startDate AND :endDate',
+        {
+          startDate: new Date(queryDto.startDate),
+          endDate: new Date(queryDto.endDate),
+        },
+      );
+    } else if (queryDto?.startDate) {
+      qb.andWhere('appointment.appointmentDate >= :startDate', {
         startDate: new Date(queryDto.startDate),
+      });
+    } else if (queryDto?.endDate) {
+      qb.andWhere('appointment.appointmentDate <= :endDate', {
         endDate: new Date(queryDto.endDate),
       });
-    } else if (queryDto?.startDate) {
-      qb.andWhere('appointment.appointmentDate >= :startDate', { startDate: new Date(queryDto.startDate) });
-    } else if (queryDto?.endDate) {
-      qb.andWhere('appointment.appointmentDate <= :endDate', { endDate: new Date(queryDto.endDate) });
     }
 
-    const sortField = queryDto?.sortBy === 'appointmentDate' ? 'appointment.appointmentDate' : 'appointment.createdAt';
+    const sortField =
+      queryDto?.sortBy === 'appointmentDate'
+        ? 'appointment.appointmentDate'
+        : 'appointment.createdAt';
     const sortOrder = queryDto?.sortOrder || 'DESC';
     qb.orderBy(sortField, sortOrder);
 
@@ -86,19 +113,27 @@ export class AppointmentsService {
     qb.skip(skip).take(take);
 
     const [appointments, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(appointments, pageMetaDto);
   }
 
-  async findMy(userId: number, queryDto?: QueryAppointmentDto): Promise<PageDto<Appointment>> {
+  async findMy(
+    userId: number,
+    queryDto?: QueryAppointmentDto,
+  ): Promise<PageDto<Appointment>> {
     const qb = this.appointmentsRepository
       .createQueryBuilder('appointment')
       .leftJoinAndSelect('appointment.patient', 'patient')
       .leftJoinAndSelect('patient.user', 'patientUser')
       .leftJoinAndSelect('appointment.doctor', 'doctor')
       .leftJoinAndSelect('doctor.user', 'doctorUser')
-      .where('(patient.userId = :userId OR doctor.userId = :userId)', { userId });
+      .where('(patient.userId = :userId OR doctor.userId = :userId)', {
+        userId,
+      });
 
     if (queryDto?.status) {
       qb.andWhere('appointment.status = :status', { status: queryDto.status });
@@ -118,12 +153,19 @@ export class AppointmentsService {
     qb.skip(skip).take(take);
 
     const [appointments, itemCount] = await qb.getManyAndCount();
-    const pageMetaDto = new PageMetaDto({ pageOptionsDto: queryDto || ({} as any), itemCount });
+    const pageMetaDto = new PageMetaDto({
+      pageOptionsDto: queryDto || ({} as any),
+      itemCount,
+    });
 
     return new PageDto(appointments, pageMetaDto);
   }
 
-  async findOne(id: number, userId?: number, roles: string[] = []): Promise<Appointment> {
+  async findOne(
+    id: number,
+    userId?: number,
+    roles: string[] = [],
+  ): Promise<Appointment> {
     const appointment = await this.appointmentsRepository.findOne({
       where: { id },
       relations: {
@@ -137,24 +179,40 @@ export class AppointmentsService {
     }
 
     // Role-based data ownership verification
-    if (roles.includes('patient') && !roles.includes('admin') && !roles.includes('receptionist') && !roles.includes('doctor')) {
+    if (
+      roles.includes('patient') &&
+      !roles.includes('admin') &&
+      !roles.includes('receptionist') &&
+      !roles.includes('doctor')
+    ) {
       if (appointment.patient?.userId !== userId) {
-        throw new ForbiddenException('You are not authorized to view this appointment');
+        throw new ForbiddenException(
+          'You are not authorized to view this appointment',
+        );
       }
     }
 
     return appointment;
   }
 
-  async update(id: number, updateAppointmentDto: UpdateAppointmentDto): Promise<Appointment> {
+  async update(
+    id: number,
+    updateAppointmentDto: UpdateAppointmentDto,
+  ): Promise<Appointment> {
     const appointment = await this.findOne(id);
     const oldStatus = appointment.status;
     this.appointmentsRepository.merge(appointment, updateAppointmentDto);
     const saved = await this.appointmentsRepository.save(appointment);
 
-    if (updateAppointmentDto.status && updateAppointmentDto.status !== oldStatus) {
+    if (
+      updateAppointmentDto.status &&
+      updateAppointmentDto.status !== oldStatus
+    ) {
       this.redisService.delByPattern('dashboard:*').catch(() => {});
-      this.sendAppointmentStatusUpdatedNotifications(saved.id, updateAppointmentDto.status).catch((err) =>
+      this.sendAppointmentStatusUpdatedNotifications(
+        saved.id,
+        updateAppointmentDto.status,
+      ).catch((err) =>
         console.error('Failed to dispatch status update notification:', err),
       );
     }
@@ -169,8 +227,9 @@ export class AppointmentsService {
 
     this.redisService.delByPattern('dashboard:*').catch(() => {});
 
-    this.sendAppointmentStatusUpdatedNotifications(saved.id, status).catch((err) =>
-      console.error('Failed to dispatch status update notification:', err),
+    this.sendAppointmentStatusUpdatedNotifications(saved.id, status).catch(
+      (err) =>
+        console.error('Failed to dispatch status update notification:', err),
     );
 
     return saved;
@@ -182,7 +241,9 @@ export class AppointmentsService {
     this.redisService.delByPattern('dashboard:*').catch(() => {});
   }
 
-  private async sendAppointmentCreatedNotifications(appointmentId: number): Promise<void> {
+  private async sendAppointmentCreatedNotifications(
+    appointmentId: number,
+  ): Promise<void> {
     const appointment = await this.appointmentsRepository.findOne({
       where: { id: appointmentId },
       relations: {
@@ -199,10 +260,13 @@ export class AppointmentsService {
     const doctorName = appointment.doctor?.user
       ? `${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`
       : 'Doctor';
-    const appDate = new Date(appointment.appointmentDate).toLocaleString('en-US', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
+    const appDate = new Date(appointment.appointmentDate).toLocaleString(
+      'en-US',
+      {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      },
+    );
 
     // Notify Doctor
     if (appointment.doctor?.user?.id) {
@@ -237,7 +301,9 @@ export class AppointmentsService {
 
     // Send Email to Patient
     if (appointment.patient?.user?.email) {
-      const portalUrl = this.configService.get<string>('mail.patientPortalUrl') || 'http://localhost:3000';
+      const portalUrl =
+        this.configService.get<string>('mail.patientPortalUrl') ||
+        'http://localhost:3000';
       this.mailService
         .sendAppointmentCreatedEmail(appointment.patient.user.email, {
           patientName,
@@ -248,12 +314,19 @@ export class AppointmentsService {
           portalUrl: `${portalUrl}/portal/appointments`,
           appointmentId: appointment.id,
         })
-        .catch((err) => console.error('Failed to send appointment created email to patient:', err));
+        .catch((err) =>
+          console.error(
+            'Failed to send appointment created email to patient:',
+            err,
+          ),
+        );
     }
 
     // Send Email to Doctor
     if (appointment.doctor?.user?.email) {
-      const adminUrl = this.configService.get<string>('mail.adminPortalUrl') || 'http://localhost:3001';
+      const adminUrl =
+        this.configService.get<string>('mail.adminPortalUrl') ||
+        'http://localhost:3001';
       this.mailService
         .sendAppointmentCreatedEmail(appointment.doctor.user.email, {
           patientName,
@@ -264,7 +337,12 @@ export class AppointmentsService {
           portalUrl: `${adminUrl}/appointments`,
           appointmentId: appointment.id,
         })
-        .catch((err) => console.error('Failed to send appointment created email to doctor:', err));
+        .catch((err) =>
+          console.error(
+            'Failed to send appointment created email to doctor:',
+            err,
+          ),
+        );
     }
   }
 
@@ -288,10 +366,13 @@ export class AppointmentsService {
     const doctorName = appointment.doctor?.user
       ? `${appointment.doctor.user.firstName} ${appointment.doctor.user.lastName}`
       : 'Doctor';
-    const appDate = new Date(appointment.appointmentDate).toLocaleString('en-US', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
+    const appDate = new Date(appointment.appointmentDate).toLocaleString(
+      'en-US',
+      {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      },
+    );
 
     // 1. Notify Patient
     if (appointment.patient?.user?.id) {
@@ -300,7 +381,10 @@ export class AppointmentsService {
         title: 'Appointment Status Updated',
         message: `Your appointment with Dr. ${doctorName} on ${appDate} is now marked as "${newStatus}".`,
         type: NotificationType.APPOINTMENT,
-        priority: newStatus === 'cancelled' ? NotificationPriority.WARNING : NotificationPriority.INFO,
+        priority:
+          newStatus === 'cancelled'
+            ? NotificationPriority.WARNING
+            : NotificationPriority.INFO,
         link: '/portal/appointments',
         metadata: {
           appointmentId: appointment.id,
@@ -340,7 +424,9 @@ export class AppointmentsService {
 
     // 4. Send Status Update Email to Patient
     if (appointment.patient?.user?.email) {
-      const portalUrl = this.configService.get<string>('mail.patientPortalUrl') || 'http://localhost:3000';
+      const portalUrl =
+        this.configService.get<string>('mail.patientPortalUrl') ||
+        'http://localhost:3000';
       this.mailService
         .sendAppointmentStatusChangedEmail(appointment.patient.user.email, {
           patientName,
@@ -351,12 +437,16 @@ export class AppointmentsService {
           portalUrl: `${portalUrl}/portal/appointments`,
           appointmentId: appointment.id,
         })
-        .catch((err) => console.error('Failed to send status update email to patient:', err));
+        .catch((err) =>
+          console.error('Failed to send status update email to patient:', err),
+        );
     }
 
     // 5. Send Status Update Email to Doctor
     if (appointment.doctor?.user?.email) {
-      const adminUrl = this.configService.get<string>('mail.adminPortalUrl') || 'http://localhost:3001';
+      const adminUrl =
+        this.configService.get<string>('mail.adminPortalUrl') ||
+        'http://localhost:3001';
       this.mailService
         .sendAppointmentStatusChangedEmail(appointment.doctor.user.email, {
           patientName,
@@ -367,14 +457,31 @@ export class AppointmentsService {
           portalUrl: `${adminUrl}/appointments`,
           appointmentId: appointment.id,
         })
-        .catch((err) => console.error('Failed to send status update email to doctor:', err));
+        .catch((err) =>
+          console.error('Failed to send status update email to doctor:', err),
+        );
     }
   }
 
   async getAvailableSlots(doctorId: number, dateStr: string) {
     const targetDate = new Date(dateStr);
-    const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 0, 0, 0);
-    const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999);
+    const startOfDay = new Date(
+      targetDate.getFullYear(),
+      targetDate.getMonth(),
+      targetDate.getDate(),
+      0,
+      0,
+      0,
+    );
+    const endOfDay = new Date(
+      targetDate.getFullYear(),
+      targetDate.getMonth(),
+      targetDate.getDate(),
+      23,
+      59,
+      59,
+      999,
+    );
 
     const bookedAppointments = await this.appointmentsRepository.find({
       where: {
@@ -393,9 +500,20 @@ export class AppointmentsService {
 
     // Standard hospital clinic time slots from 09:00 to 17:00 (every 30 mins, skipping 13:00-14:00 lunch)
     const allSlots = [
-      '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-      '12:00', '12:30', '14:00', '14:30', '15:00', '15:30',
-      '16:00', '16:30',
+      '09:00',
+      '09:30',
+      '10:00',
+      '10:30',
+      '11:00',
+      '11:30',
+      '12:00',
+      '12:30',
+      '14:00',
+      '14:30',
+      '15:00',
+      '15:30',
+      '16:00',
+      '16:30',
     ];
 
     return allSlots.map((time) => ({

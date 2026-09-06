@@ -10,12 +10,17 @@ export class QueryPatientDto extends BaseQueryDto {
   @IsOptional()
   readonly gender?: Gender;
 
-  @ApiPropertyOptional({ enum: BloodGroup, description: 'Filter by blood group' })
+  @ApiPropertyOptional({
+    enum: BloodGroup,
+    description: 'Filter by blood group',
+  })
   @IsEnum(BloodGroup)
   @IsOptional()
   readonly bloodGroup?: BloodGroup;
 
-  @ApiPropertyOptional({ description: 'Filter by status (e.g. active, inactive)' })
+  @ApiPropertyOptional({
+    description: 'Filter by status (e.g. active, inactive)',
+  })
   @IsString()
   @IsOptional()
   readonly status?: string;

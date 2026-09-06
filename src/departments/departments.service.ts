@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Department } from './entities/department.entity';
@@ -28,14 +32,19 @@ export class DepartmentsService {
   }
 
   async findOne(id: number): Promise<Department> {
-    const department = await this.departmentsRepository.findOne({ where: { id } });
+    const department = await this.departmentsRepository.findOne({
+      where: { id },
+    });
     if (!department) {
       throw new NotFoundException(`Department with ID ${id} not found`);
     }
     return department;
   }
 
-  async update(id: number, updateDepartmentDto: UpdateDepartmentDto): Promise<Department> {
+  async update(
+    id: number,
+    updateDepartmentDto: UpdateDepartmentDto,
+  ): Promise<Department> {
     const department = await this.findOne(id);
     this.departmentsRepository.merge(department, updateDepartmentDto);
     return this.departmentsRepository.save(department);

@@ -22,7 +22,10 @@ describe('UsersService', () => {
         UsersService,
         { provide: getRepositoryToken(User), useClass: MockRepository },
         { provide: getRepositoryToken(Role), useClass: MockRepository },
-        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('1') } },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn().mockReturnValue('1') },
+        },
         { provide: DataSource, useValue: {} },
       ],
     }).compile();
@@ -41,24 +44,32 @@ describe('UsersService', () => {
 
   describe('create', () => {
     it('should throw ConflictException if email is missing', async () => {
-      await expect(service.create({ mobile: '123' })).rejects.toThrow(ConflictException);
+      await expect(service.create({ mobile: '123' })).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('should throw ConflictException if mobile is missing', async () => {
-      await expect(service.create({ email: 'test@test.com' })).rejects.toThrow(ConflictException);
+      await expect(service.create({ email: 'test@test.com' })).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('should throw ConflictException if email exists', async () => {
       mockUsersRepo.findOne.mockResolvedValueOnce({ id: 1 }); // email exists
 
-      await expect(service.create({ email: 'test@test.com', mobile: '1234567890' })).rejects.toThrow(ConflictException);
+      await expect(
+        service.create({ email: 'test@test.com', mobile: '1234567890' }),
+      ).rejects.toThrow(ConflictException);
     });
 
     it('should throw ConflictException if mobile exists', async () => {
       mockUsersRepo.findOne.mockResolvedValueOnce(null); // email doesn't exist
       mockUsersRepo.findOne.mockResolvedValueOnce({ id: 2 }); // mobile exists
 
-      await expect(service.create({ email: 'test@test.com', mobile: '1234567890' })).rejects.toThrow(ConflictException);
+      await expect(
+        service.create({ email: 'test@test.com', mobile: '1234567890' }),
+      ).rejects.toThrow(ConflictException);
     });
 
     it('should create user', async () => {
@@ -66,7 +77,10 @@ describe('UsersService', () => {
       mockUsersRepo.findOne.mockResolvedValueOnce(null); // mobile doesn't exist
       mockUsersRepo.save.mockResolvedValue({ id: 1, email: 'test@test.com' });
 
-      const result = await service.create({ email: 'test@test.com', mobile: '1234567890' });
+      const result = await service.create({
+        email: 'test@test.com',
+        mobile: '1234567890',
+      });
 
       expect(mockUsersRepo.create).toHaveBeenCalled();
       expect(mockUsersRepo.save).toHaveBeenCalled();

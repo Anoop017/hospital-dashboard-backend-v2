@@ -11,7 +11,10 @@ export enum BillStatusFilter {
 }
 
 export class QueryBillDto extends BaseQueryDto {
-  @ApiPropertyOptional({ enum: BillStatusFilter, description: 'Filter bills by payment status' })
+  @ApiPropertyOptional({
+    enum: BillStatusFilter,
+    description: 'Filter bills by payment status',
+  })
   @IsEnum(BillStatusFilter)
   @IsOptional()
   readonly status?: BillStatusFilter;

@@ -1,6 +1,7 @@
 import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { User } from '../../users/entities/user.entity';
+import { Admin } from '../../admins/entities/admin.entity';
 
 export enum NotificationType {
   APPOINTMENT = 'appointment',
@@ -20,13 +21,22 @@ export enum NotificationPriority {
 @Entity('notifications')
 @Index(['userId', 'isRead'])
 @Index(['userId', 'createdAt'])
+@Index(['adminId', 'isRead'])
+@Index(['adminId', 'createdAt'])
 export class Notification extends BaseEntity {
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  @Column()
+  @Column({ nullable: true })
   userId: number;
+
+  @ManyToOne(() => Admin, { onDelete: 'CASCADE', nullable: true })
+  @JoinColumn({ name: 'adminId' })
+  admin: Admin;
+
+  @Column({ nullable: true })
+  adminId: number;
 
   @Column()
   title: string;

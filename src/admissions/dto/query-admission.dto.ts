@@ -10,7 +10,9 @@ export class QueryAdmissionDto extends BaseQueryDto {
   @IsOptional()
   readonly patientId?: number;
 
-  @ApiPropertyOptional({ description: 'Filter by status (e.g. admitted, discharged)' })
+  @ApiPropertyOptional({
+    description: 'Filter by status (e.g. admitted, discharged)',
+  })
   @IsString()
   @IsOptional()
   readonly status?: string;

@@ -3,7 +3,10 @@ import { PharmacyService } from './pharmacy.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Medicine } from '../medicines/entities/medicine.entity';
 import { Prescription } from '../prescriptions/entities/prescription.entity';
-import { MockRepository, MockQueryRunner } from '../common/test-utils/mock-repository';
+import {
+  MockRepository,
+  MockQueryRunner,
+} from '../common/test-utils/mock-repository';
 import { DataSource } from 'typeorm';
 
 describe('PharmacyService', () => {
@@ -17,7 +20,9 @@ describe('PharmacyService', () => {
         { provide: getRepositoryToken(Prescription), useClass: MockRepository },
         {
           provide: DataSource,
-          useValue: { createQueryRunner: jest.fn().mockReturnValue(MockQueryRunner) },
+          useValue: {
+            createQueryRunner: jest.fn().mockReturnValue(MockQueryRunner),
+          },
         },
       ],
     }).compile();
@@ -39,7 +44,9 @@ describe('PharmacyService', () => {
     MockQueryRunner.manager.findOne
       .mockResolvedValueOnce(mockPrescription)
       .mockResolvedValueOnce(mockMedicine);
-    MockQueryRunner.manager.save.mockImplementation((entity, data) => Promise.resolve(data));
+    MockQueryRunner.manager.save.mockImplementation((entity, data) =>
+      Promise.resolve(data),
+    );
 
     const result = await service.fulfillPrescription(1);
     expect(MockQueryRunner.startTransaction).toHaveBeenCalled();

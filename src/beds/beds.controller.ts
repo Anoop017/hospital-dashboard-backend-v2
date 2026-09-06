@@ -1,8 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { BedsService } from './beds.service';
 import { CreateBedDto } from './dto/create-bed.dto';
 import { UpdateBedDto } from './dto/update-bed.dto';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -16,44 +32,94 @@ export class BedsController {
   constructor(private readonly bedsService: BedsService) {}
 
   @Post()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(
+    Role.ADMIN,
+    Role.SUPER_ADMIN,
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.STAFF,
+  )
   @ApiOperation({ summary: 'Create a new bed' })
   create(@Body() createBedDto: CreateBedDto) {
     return this.bedsService.create(createBedDto);
   }
 
   @Get('availability-matrix')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(
+    Role.ADMIN,
+    Role.SUPER_ADMIN,
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.STAFF,
+  )
   @ApiOperation({ summary: 'Get live bed availability matrix grouped by ward' })
   getAvailabilityMatrix() {
     return this.bedsService.getAvailabilityMatrix();
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
-  @ApiOperation({ summary: 'Get all beds, optionally filtered by ward or status' })
+  @Roles(
+    Role.ADMIN,
+    Role.SUPER_ADMIN,
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.STAFF,
+  )
+  @ApiOperation({
+    summary: 'Get all beds, optionally filtered by ward or status',
+  })
   @ApiQuery({ name: 'wardId', required: false, type: Number })
   @ApiQuery({ name: 'status', required: false, example: 'available' })
   findAll(@Query('wardId') wardId?: number, @Query('status') status?: string) {
-    return this.bedsService.findAll(wardId ? Number(wardId) : undefined, status);
+    return this.bedsService.findAll(
+      wardId ? Number(wardId) : undefined,
+      status,
+    );
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(
+    Role.ADMIN,
+    Role.SUPER_ADMIN,
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.STAFF,
+  )
   @ApiOperation({ summary: 'Get a bed by ID' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.bedsService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(
+    Role.ADMIN,
+    Role.SUPER_ADMIN,
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.STAFF,
+  )
   @ApiOperation({ summary: 'Update a bed' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateBedDto: UpdateBedDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateBedDto: UpdateBedDto,
+  ) {
     return this.bedsService.update(id, updateBedDto);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(
+    Role.ADMIN,
+    Role.SUPER_ADMIN,
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.STAFF,
+  )
   @ApiOperation({ summary: 'Delete a bed' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.bedsService.remove(id);

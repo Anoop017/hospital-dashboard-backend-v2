@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -8,6 +12,8 @@ import { Role } from '../roles/entities/role.entity';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { In } from 'typeorm';
+import { AdminsService } from '../admins/admins.service';
+import { AdminRole } from '../common/enums/admin-role.enum';
 
 @Injectable()
 export class UsersService {
@@ -18,6 +24,7 @@ export class UsersService {
     private roleRepository: Repository<Role>,
     private configService: ConfigService,
     private dataSource: DataSource,
+    private adminsService: AdminsService,
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
@@ -92,7 +99,8 @@ export class UsersService {
     };
 
     if (role) {
-      const rolesToSearch = role === 'staff' ? ['staff', 'nurse'] : role.split(',');
+      const rolesToSearch =
+        role === 'staff' ? ['staff', 'nurse'] : role.split(',');
       queryOptions.where = {
         roles: {
           name: In(rolesToSearch),
@@ -103,7 +111,12 @@ export class UsersService {
     return this.usersRepository.find(queryOptions);
   }
 
-  async findAllSummary(): Promise<{ total: number; active: number; locked: number; admins: number }> {
+  async findAllSummary(): Promise<{
+    total: number;
+    active: number;
+    locked: number;
+    admins: number;
+  }> {
     const users = await this.usersRepository.find({
       relations: { roles: true },
       select: {
@@ -114,24 +127,42 @@ export class UsersService {
       },
     });
 
+    const adminCount = await this.adminsService.count();
+
     return {
       total: users.length,
       active: users.filter((u) => u.isActive).length,
       locked: users.filter((u) => u.isLocked).length,
-      admins: users.filter((u) => u.roles?.some((r) => r.name === 'admin' || r.name === 'super_admin')).length,
+      admins: adminCount,
     };
   }
 
-  async createAdminUser(createUserDto: CreateUserDto): Promise<User> {
+  async createAdminUser(createUserDto: CreateUserDto): Promise<any> {
     const { password, roles, ...userData } = createUserDto;
+
+    // If an admin role was selected from the dashboard, create it in the dedicated admins table
+    if (roles?.some((r: any) => r === 'admin' || r === 'super_admin')) {
+      const adminRole = roles.includes(AdminRole.SUPER_ADMIN as any)
+        ? AdminRole.SUPER_ADMIN
+        : AdminRole.ADMIN;
+      return this.adminsService.create({
+        ...userData,
+        password,
+        role: adminRole,
+      });
+    }
 
     const existingEmail = await this.findByEmail(userData.email);
     if (existingEmail) throw new ConflictException('Email already exists');
 
     const existingMobile = await this.findByNumber(userData.mobile);
-    if (existingMobile) throw new ConflictException('Mobile number already exists');
+    if (existingMobile)
+      throw new ConflictException('Mobile number already exists');
 
-    const saltRounds = parseInt(this.configService.get('BCRYPT_SALT_ROUNDS') || '12', 10);
+    const saltRounds = parseInt(
+      this.configService.get('BCRYPT_SALT_ROUNDS') || '12',
+      10,
+    );
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
     let assignedRoles: Role[] = [];
@@ -149,7 +180,7 @@ export class UsersService {
 
     const savedUser = await this.usersRepository.save(user);
     const { passwordHash: _, ...result } = savedUser;
-    return result as User;
+    return result;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
@@ -163,7 +194,8 @@ export class UsersService {
 
     if (updateData.mobile && updateData.mobile !== user.mobile) {
       const existingMobile = await this.findByNumber(updateData.mobile);
-      if (existingMobile) throw new ConflictException('Mobile number already exists');
+      if (existingMobile)
+        throw new ConflictException('Mobile number already exists');
     }
 
     Object.assign(user, updateData);

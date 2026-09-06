@@ -23,6 +23,8 @@ describe('DepartmentsService', () => {
 
   it('should throw ConflictException if department exists', async () => {
     mockRepo.findOne.mockResolvedValue({ id: '1' });
-    await expect(service.create({ name: 'Cardio' })).rejects.toThrow(ConflictException);
+    await expect(service.create({ name: 'Cardio' })).rejects.toThrow(
+      ConflictException,
+    );
   });
 });

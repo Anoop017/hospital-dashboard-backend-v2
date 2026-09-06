@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 
@@ -11,10 +16,20 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly configService: ConfigService) {}
 
   async onModuleInit() {
-    const host = this.configService.get<string>('redis.host') || process.env.REDIS_HOST || 'localhost';
-    const port = this.configService.get<number>('redis.port') || parseInt(process.env.REDIS_PORT || '6379', 10);
-    const password = this.configService.get<string>('redis.password') || process.env.REDIS_PASSWORD || undefined;
-    const db = this.configService.get<number>('redis.db') || parseInt(process.env.REDIS_DB || '0', 10);
+    const host =
+      this.configService.get<string>('redis.host') ||
+      process.env.REDIS_HOST ||
+      'localhost';
+    const port =
+      this.configService.get<number>('redis.port') ||
+      parseInt(process.env.REDIS_PORT || '6379', 10);
+    const password =
+      this.configService.get<string>('redis.password') ||
+      process.env.REDIS_PASSWORD ||
+      undefined;
+    const db =
+      this.configService.get<number>('redis.db') ||
+      parseInt(process.env.REDIS_DB || '0', 10);
 
     try {
       this.client = new Redis({
@@ -45,7 +60,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
       this.client.on('error', (err) => {
         this.isConnected = false;
-        this.logger.warn(`⚠️ Redis is unavailable (${err.message}). Application will operate in direct fallback mode.`);
+        this.logger.warn(
+          `⚠️ Redis is unavailable (${err.message}). Application will operate in direct fallback mode.`,
+        );
       });
 
       this.client.on('close', () => {
@@ -54,7 +71,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
 
       // Attempt initial connection without blocking app startup
       await this.client.connect().catch((err) => {
-        this.logger.warn(`⚠️ Initial Redis connection failed: ${err.message}. Direct fallback active.`);
+        this.logger.warn(
+          `⚠️ Initial Redis connection failed: ${err.message}. Direct fallback active.`,
+        );
       });
     } catch (err: any) {
       this.logger.warn(`⚠️ Could not initialize Redis client: ${err.message}`);

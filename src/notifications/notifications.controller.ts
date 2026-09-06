@@ -9,7 +9,12 @@ import {
   Request,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 import { QueryNotificationDto } from './dto/query-notification.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -22,38 +27,56 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get current user notifications with pagination and filters' })
-  findMyNotifications(@Request() req: any, @Query() queryDto: QueryNotificationDto) {
+  @ApiOperation({
+    summary: 'Get current user notifications with pagination and filters',
+  })
+  findMyNotifications(
+    @Request() req: any,
+    @Query() queryDto: QueryNotificationDto,
+  ) {
     const userId = Number(req.user.userId || req.user.sub || req.user.id);
-    return this.notificationsService.findMyNotifications(userId, queryDto);
+    const userType = req.user?.userType || 'user';
+    return this.notificationsService.findMyNotifications(
+      userId,
+      queryDto,
+      userType,
+    );
   }
 
   @Get('unread-count')
-  @ApiOperation({ summary: 'Get unread notification count for the current user' })
+  @ApiOperation({
+    summary: 'Get unread notification count for the current user',
+  })
   @ApiResponse({ status: 200, description: 'Returns { count: number }' })
   getUnreadCount(@Request() req: any) {
     const userId = Number(req.user.userId || req.user.sub || req.user.id);
-    return this.notificationsService.getUnreadCount(userId);
+    const userType = req.user?.userType || 'user';
+    return this.notificationsService.getUnreadCount(userId, userType);
   }
 
   @Patch('read-all')
-  @ApiOperation({ summary: 'Mark all unread notifications as read for the current user' })
+  @ApiOperation({
+    summary: 'Mark all unread notifications as read for the current user',
+  })
   markAllAsRead(@Request() req: any) {
     const userId = Number(req.user.userId || req.user.sub || req.user.id);
-    return this.notificationsService.markAllAsRead(userId);
+    const userType = req.user?.userType || 'user';
+    return this.notificationsService.markAllAsRead(userId, userType);
   }
 
   @Patch(':id/read')
   @ApiOperation({ summary: 'Mark a single notification as read' })
   markAsRead(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     const userId = Number(req.user.userId || req.user.sub || req.user.id);
-    return this.notificationsService.markAsRead(id, userId);
+    const userType = req.user?.userType || 'user';
+    return this.notificationsService.markAsRead(id, userId, userType);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete/dismiss a notification' })
   remove(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     const userId = Number(req.user.userId || req.user.sub || req.user.id);
-    return this.notificationsService.remove(id, userId);
+    const userType = req.user?.userType || 'user';
+    return this.notificationsService.remove(id, userId, userType);
   }
 }

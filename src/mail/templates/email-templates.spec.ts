@@ -48,7 +48,9 @@ describe('Handlebars Email Templates', () => {
     });
 
     expect(html).toContain('Alice Brown');
-    expect(html).toContain('http://localhost:3000/reset-password?token=abcdef123456');
+    expect(html).toContain(
+      'http://localhost:3000/reset-password?token=abcdef123456',
+    );
     expect(html).toContain('ABCDEF');
     expect(html).toContain('15 minutes');
   });

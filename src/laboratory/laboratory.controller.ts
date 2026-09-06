@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { LaboratoryService } from './laboratory.service';
 import { CreateLabTestDto } from './dto/create-lab-test.dto';
 import { UpdateLabTestDto } from './dto/update-lab-test.dto';
@@ -56,8 +68,13 @@ export class LaboratoryController {
 
   @Roles(Role.LAB_TECHNICIAN, Role.ADMIN, Role.DOCTOR)
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a lab test (upload results, modify status)' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateLabTestDto: UpdateLabTestDto) {
+  @ApiOperation({
+    summary: 'Update a lab test (upload results, modify status)',
+  })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateLabTestDto: UpdateLabTestDto,
+  ) {
     return this.laboratoryService.update(id, updateLabTestDto);
   }
 

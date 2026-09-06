@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Medicine } from '../medicines/entities/medicine.entity';
 import { Prescription } from '../prescriptions/entities/prescription.entity';
@@ -25,7 +29,9 @@ export class PharmacyService {
       });
 
       if (!prescription) {
-        throw new NotFoundException(`Prescription with ID ${prescriptionId} not found`);
+        throw new NotFoundException(
+          `Prescription with ID ${prescriptionId} not found`,
+        );
       }
 
       // Find the medicine by name (string matching)
@@ -34,13 +40,17 @@ export class PharmacyService {
       });
 
       if (!medicine) {
-        throw new BadRequestException(`Medicine ${prescription.medication} not found in pharmacy inventory`);
+        throw new BadRequestException(
+          `Medicine ${prescription.medication} not found in pharmacy inventory`,
+        );
       }
 
       const deductionUnits = 1;
 
       if (medicine.stockQuantity < deductionUnits) {
-        throw new BadRequestException(`Not enough stock for medicine ${medicine.name}`);
+        throw new BadRequestException(
+          `Not enough stock for medicine ${medicine.name}`,
+        );
       }
 
       medicine.stockQuantity -= deductionUnits;

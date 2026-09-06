@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Request,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { AdmissionsService } from './admissions.service';
 import { CreateAdmissionDto } from './dto/create-admission.dto';
 import { UpdateAdmissionDto } from './dto/update-admission.dto';
@@ -25,7 +37,9 @@ export class AdmissionsController {
 
   @Get()
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
-  @ApiOperation({ summary: 'Get all admissions with pagination, search, and filters' })
+  @ApiOperation({
+    summary: 'Get all admissions with pagination, search, and filters',
+  })
   findAll(@Query() queryDto: QueryAdmissionDto) {
     return this.admissionsService.findAll(queryDto);
   }
@@ -39,7 +53,14 @@ export class AdmissionsController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF, Role.PATIENT)
+  @Roles(
+    Role.ADMIN,
+    Role.DOCTOR,
+    Role.NURSE,
+    Role.RECEPTIONIST,
+    Role.STAFF,
+    Role.PATIENT,
+  )
   @ApiOperation({ summary: 'Get an admission by ID' })
   findOne(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     const userId = Number(req.user.userId || req.user.sub);
@@ -49,8 +70,13 @@ export class AdmissionsController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
-  @ApiOperation({ summary: 'Update an admission (e.g. discharge, transfer bed)' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateAdmissionDto: UpdateAdmissionDto) {
+  @ApiOperation({
+    summary: 'Update an admission (e.g. discharge, transfer bed)',
+  })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateAdmissionDto: UpdateAdmissionDto,
+  ) {
     return this.admissionsService.update(id, updateAdmissionDto);
   }
 

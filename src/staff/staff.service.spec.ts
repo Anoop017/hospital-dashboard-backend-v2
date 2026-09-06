@@ -25,6 +25,13 @@ describe('StaffService', () => {
 
   it('should throw ConflictException if staff profile exists for user', async () => {
     mockRepo.findOne.mockResolvedValue({ id: 1 });
-    await expect(service.create({ userId: 1, departmentId: 1, jobTitle: 'Nurse', hireDate: '2023-01-01' })).rejects.toThrow(ConflictException);
+    await expect(
+      service.create({
+        userId: 1,
+        departmentId: 1,
+        jobTitle: 'Nurse',
+        hireDate: '2023-01-01',
+      }),
+    ).rejects.toThrow(ConflictException);
   });
 });
