@@ -46,7 +46,7 @@ export class DoctorsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT, Role.NURSE, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT, Role.NURSE, Role.DOCTOR, Role.STAFF)
   @ApiOperation({
     summary: 'Get all doctors with pagination, search, and department filter',
   })
@@ -63,7 +63,7 @@ export class DoctorsController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT, Role.NURSE, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.RECEPTIONIST, Role.PATIENT, Role.NURSE, Role.DOCTOR, Role.STAFF)
   @ApiOperation({ summary: 'Get a doctor by ID' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.doctorsService.findOne(id);

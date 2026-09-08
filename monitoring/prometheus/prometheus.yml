@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alert_rules.yml"
+
+scrape_configs:
+  - job_name: "hospital-nestjs-backend"
+    metrics_path: "/api/v1/metrics"
+    static_configs:
+      - targets: ["host.docker.internal:3042"]
+        labels:
+          service: "hospital-nestjs-backend"
+          env: "development"
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

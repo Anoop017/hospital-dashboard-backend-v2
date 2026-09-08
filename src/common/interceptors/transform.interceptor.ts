@@ -32,6 +32,11 @@ export class TransformInterceptor<T> implements NestInterceptor<
     const request = httpContext.getRequest();
     const statusCode = response.statusCode || HttpStatus.OK;
 
+    const url = request.originalUrl || request.url || '';
+    if (url.includes('/metrics')) {
+      return next.handle();
+    }
+
     return next.handle().pipe(
       map((resData) => {
         // If response is already in wrapped format, return directly

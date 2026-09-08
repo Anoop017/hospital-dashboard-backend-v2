@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'Hospital Dashboards'
+    orgId: 1
+    folder: 'Hospital Operations & SRE'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

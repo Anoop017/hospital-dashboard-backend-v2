@@ -32,9 +32,11 @@ import { MailModule } from './mail/mail.module';
 import { RedisModule } from './redis/redis.module';
 
 import { AdminsModule } from './admins/admins.module';
+import { MetricsModule } from './metrics/metrics.module';
 
 @Module({
   imports: [
+    MetricsModule,
     ConfigModule,
     DatabaseModule,
     AdminsModule,

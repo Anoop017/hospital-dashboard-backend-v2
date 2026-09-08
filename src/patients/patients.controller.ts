@@ -46,7 +46,7 @@ export class PatientsController {
   }
 
   @Get('overview')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
   @ApiOperation({ summary: 'Get formatted patient overview list' })
   getOverview(@Query('filter') filter?: string) {
     return this.patientsService.getOverview(filter);
@@ -61,7 +61,7 @@ export class PatientsController {
   }
 
   @Get(':id/summary')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
   @ApiOperation({
     summary: 'Get 360-degree patient timeline & clinical summary',
   })
@@ -70,7 +70,7 @@ export class PatientsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
   @ApiOperation({
     summary: 'Get all patients with pagination, search, and filters',
   })
@@ -79,7 +79,7 @@ export class PatientsController {
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.PATIENT, Role.STAFF)
   @ApiOperation({ summary: 'Get a patient by ID' })
   findOne(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     const userId = Number(req.user.userId || req.user.sub);

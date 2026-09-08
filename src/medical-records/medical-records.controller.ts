@@ -36,7 +36,7 @@ export class MedicalRecordsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.STAFF)
   @ApiOperation({
     summary: 'Get all medical records with pagination and search',
   })
@@ -53,14 +53,14 @@ export class MedicalRecordsController {
   }
 
   @Get('patient/:patientId')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT, Role.STAFF)
   @ApiOperation({ summary: 'Get all medical records for a specific patient' })
   findByPatient(@Param('patientId', ParseIntPipe) patientId: number) {
     return this.medicalRecordsService.findByPatient(patientId);
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.PATIENT, Role.STAFF)
   @ApiOperation({ summary: 'Get a medical record by ID' })
   findOne(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
     const userId = Number(req.user.userId || req.user.sub);

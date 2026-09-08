@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import * as dns from 'node:dns';
 import { winstonConfig } from './config/logger.config';
+import { MetricsInterceptor } from './metrics/metrics.interceptor';
 
 dns.setServers(['8.8.8.8', '8.8.4.4']);
 
@@ -33,8 +34,13 @@ async function bootstrap() {
   app.setGlobalPrefix(apiPrefix);
 
   // Global Filters & Interceptors
+  const metricsInterceptor = app.get(MetricsInterceptor);
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.useGlobalInterceptors(new XssInterceptor(), new TransformInterceptor());
+  app.useGlobalInterceptors(
+    new XssInterceptor(),
+    new TransformInterceptor(),
+    metricsInterceptor,
+  );
 
   // Validation
   app.useGlobalPipes(
@@ -62,5 +68,6 @@ async function bootstrap() {
     `Application is running on: http://localhost:${port}/${apiPrefix}`,
   );
   console.log(`Swagger docs at: http://localhost:${port}/${apiPrefix}/docs`);
+  console.log(`Prometheus metrics at: http://localhost:${port}/${apiPrefix}/metrics`);
 }
 bootstrap();

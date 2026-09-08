@@ -1,0 +1,41 @@
+groups:
+  - name: hospital_api_alerts
+    rules:
+      # Alert when HTTP 5xx error rate exceeds 2% over a 5m window
+      - alert: HighHttpErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status_class="5xx"}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) * 100 > 2
+        for: 2m
+        labels:
+          severity: critical
+          tier: api
+        annotations:
+          summary: "High 5xx error rate detected on Hospital API"
+          description: "5xx error rate is currently {{ $value | printf \"%.2f\" }}% (> 2% threshold)."
+
+      # Alert when P99 latency exceeds 1.0 second
+      - alert: HighLatencyP99
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1.0
+        for: 3m
+        labels:
+          severity: warning
+          tier: api
+        annotations:
+          summary: "P99 latency breach (> 1s) on Hospital API"
+          description: "P99 response time is currently {{ $value | printf \"%.2f\" }}s."
+
+      # Alert if backend instance is down
+      - alert: BackendServiceDown
+        expr: up{job="hospital-nestjs-backend"} == 0
+        for: 1m
+        labels:
+          severity: page
+          tier: infrastructure
+        annotations:
+          summary: "Hospital NestJS Backend is unreachable"
+          description: "Prometheus failed to scrape NestJS /metrics endpoint for over 1 minute."
