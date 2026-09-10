@@ -25,4 +25,9 @@ describe('AdmissionsController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
+
+  it('should include Role.STAFF in the allowed roles for update', () => {
+    const roles = Reflect.getMetadata('roles', controller.update);
+    expect(roles).toContain('staff');
+  });
 });

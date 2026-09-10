@@ -26,17 +26,17 @@ import { Role } from '../common/enums/role.enum';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('admissions')
 export class AdmissionsController {
-  constructor(private readonly admissionsService: AdmissionsService) {}
+  constructor(private readonly admissionsService: AdmissionsService) { }
 
   @Post()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST, Role.SUPER_ADMIN, Role.STAFF, Role.PATIENT, Role.NURSE)
   @ApiOperation({ summary: 'Create a new admission' })
   create(@Body() createAdmissionDto: CreateAdmissionDto) {
     return this.admissionsService.create(createAdmissionDto);
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE, Role.RECEPTIONIST, Role.STAFF)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST, Role.SUPER_ADMIN, Role.STAFF, Role.PATIENT, Role.NURSE)
   @ApiOperation({
     summary: 'Get all admissions with pagination, search, and filters',
   })
@@ -45,7 +45,7 @@ export class AdmissionsController {
   }
 
   @Get('me')
-  @Roles(Role.PATIENT, Role.DOCTOR)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST, Role.SUPER_ADMIN, Role.STAFF, Role.PATIENT, Role.NURSE)
   @ApiOperation({ summary: 'Get my admissions' })
   findMe(@Request() req: any, @Query() queryDto: QueryAdmissionDto) {
     const userId = Number(req.user.userId || req.user.sub);
@@ -69,7 +69,7 @@ export class AdmissionsController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.DOCTOR, Role.NURSE)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST, Role.SUPER_ADMIN, Role.STAFF, Role.PATIENT, Role.NURSE)
   @ApiOperation({
     summary: 'Update an admission (e.g. discharge, transfer bed)',
   })
@@ -81,7 +81,7 @@ export class AdmissionsController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.DOCTOR, Role.RECEPTIONIST, Role.SUPER_ADMIN, Role.STAFF, Role.PATIENT, Role.NURSE)
   @ApiOperation({ summary: 'Delete an admission' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.admissionsService.remove(id);
