@@ -410,6 +410,7 @@ export class DashboardService {
     const labels: string[] = [];
     const appointmentsData: number[] = [];
     const admissionsData: number[] = [];
+    const dischargesData: number[] = [];
 
     for (let i = daysCount - 1; i >= 0; i--) {
       const d = new Date();
@@ -438,12 +439,16 @@ export class DashboardService {
       const admCount = await this.admissionRepo.count({
         where: { admissionDate: Between(dayStart, dayEnd) },
       });
+      const disCount = await this.admissionRepo.count({
+        where: { dischargeDate: Between(dayStart, dayEnd) },
+      });
 
       labels.push(
         d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       );
       appointmentsData.push(aptCount);
       admissionsData.push(admCount);
+      dischargesData.push(disCount);
     }
 
     const result = {
@@ -452,6 +457,7 @@ export class DashboardService {
       datasets: [
         { label: 'Appointments', data: appointmentsData },
         { label: 'Admissions', data: admissionsData },
+        { label: 'Discharges', data: dischargesData },
       ],
     };
 

@@ -29,7 +29,7 @@ export class DashboardController {
   }
 
   @Get('analytics')
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN, Role.STAFF, Role.NURSE, Role.RECEPTIONIST, Role.DOCTOR)
   @ApiOperation({
     summary: 'Get time-series analytics data for charts (Admin only)',
   })
