@@ -11,7 +11,7 @@ A robust, scalable backend API for the Hospital Management System. It serves bot
 
 ## Tech Stack
 
-- **Framework:** NestJS (Node.js)
+- **Framework:** NestJS (Node.js) Also has a Go backend
 - **Language:** TypeScript
 - **Database ORM:** TypeORM
 - **Authentication:** Passport, JWT (JSON Web Tokens)
